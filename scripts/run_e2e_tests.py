@@ -259,10 +259,11 @@ def build_js_files(dev_mode_setting):
             with python_utils.open_file(HASHES_FILE_PATH, 'w') as hash_file:
                 hash_file.write('{}')
         try:
-            common.run_cmd(
+            exit_status = subprocess.check_call(
                 [common.NODE_BIN_PATH, WEBPACK_BIN_PATH, '--config',
                  'webpack.dev.config.ts'])
-        except subprocess.CalledProcessError as error:
+            python_utils.PRINT('exit status is %s' % exit_status)
+        except Exception as error:
             python_utils.PRINT(error.output)
             sys.exit(error.returncode)
     build.main(args=(['--prod_env'] if not dev_mode_setting else []))
@@ -400,8 +401,7 @@ def start_google_app_engine_server(dev_mode_setting):
 
     p = subprocess.Popen(
         '%s %s/dev_appserver.py --host 0.0.0.0 --port %s '
-        '--clear_datastore=yes --dev_appserver_log_level=critical '
-        '--log_level=critical --skip_sdk_update_check=true %s' % (
+        '--clear_datastore=yes --skip_sdk_update_check=true %s' % (
             common.CURRENT_PYTHON_BIN, common.GOOGLE_APP_ENGINE_HOME,
             GOOGLE_APP_ENGINE_PORT, app_yaml_filepath), shell=True)
     SUBPROCESSES.append(p)
