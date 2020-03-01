@@ -39,6 +39,8 @@ CHROME_DRIVER_VERSION = '2.41'
 WEB_DRIVER_PORT = 4444
 GOOGLE_APP_ENGINE_PORT = 9001
 OPPIA_SERVER_PORT = 8181
+WEBPACK_BUNDLES_COUNT = 127
+WEBPACK_BUNDLES_PATH = os.path.join(common.CURR_DIR, 'webpack_bundles')
 PROTRACTOR_BIN_PATH = os.path.join(
     common.NODE_MODULES_PATH, 'protractor', 'bin', 'protractor')
 
@@ -259,13 +261,12 @@ def build_js_files(dev_mode_setting):
             with python_utils.open_file(HASHES_FILE_PATH, 'w') as hash_file:
                 hash_file.write('{}')
         try:
-            webpack_process = subprocess.Popen(
-                [common.NODE_BIN_PATH, WEBPACK_BIN_PATH, '--bail', '--config',
+            subprocess.check_call(
+                [common.NODE_BIN_PATH, WEBPACK_BIN_PATH, '--config',
                  'webpack.dev.config.ts'])
-            time.sleep(10)
-            webpack_process.wait()
-            python_utils.PRINT('exit status is %s' % webpack_process.returncode)
-        except Exception as error:
+            while len(os.listdir(WEBPACK_BUNDLES_PATH)) != WEBPACK_BUNDLES_COUNT:
+                time.sleep(1)
+        except OSError as error:
             python_utils.PRINT(error.output)
             sys.exit(error.returncode)
     build.main(args=(['--prod_env'] if not dev_mode_setting else []))
