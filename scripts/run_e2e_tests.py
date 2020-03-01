@@ -259,10 +259,12 @@ def build_js_files(dev_mode_setting):
             with python_utils.open_file(HASHES_FILE_PATH, 'w') as hash_file:
                 hash_file.write('{}')
         try:
-            exit_status = subprocess.check_call(
-                [common.NODE_BIN_PATH, WEBPACK_BIN_PATH, '--display=verbose',
-                 '--config', 'webpack.dev.config.ts'])
-            python_utils.PRINT('exit status is %s' % exit_status)
+            webpack_process = subprocess.Popen(
+                [common.NODE_BIN_PATH, WEBPACK_BIN_PATH, '--config',
+                 'webpack.dev.config.ts'])
+            time.sleep(10)
+            webpack_process.wait()
+            python_utils.PRINT('exit status is %s' % webpack_process)
         except Exception as error:
             python_utils.PRINT(error.output)
             sys.exit(error.returncode)
