@@ -267,8 +267,8 @@ def build_js_files(dev_mode_setting):
             while len(os.listdir(WEBPACK_BUNDLES_PATH)) != WEBPACK_BUNDLES_COUNT:
                 time.sleep(1)
         except OSError as error:
-            python_utils.PRINT(error.output)
-            sys.exit(error.returncode)
+            python_utils.PRINT(error)
+            sys.exit(error)
     build.main(args=(['--prod_env'] if not dev_mode_setting else []))
 
 
