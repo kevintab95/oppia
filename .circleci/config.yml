@@ -95,7 +95,7 @@ jobs:
       - run:
           name: Run backend tests
           command: |
-            python -m scripts.run_backend_tests --test_target="scripts.run_e2e_tests_test.RunE2ETestsTests"
+            python -m scripts.run_backend_tests --test_target="scripts.run_e2e_tests_test.RunE2ETestsTests.test_wait_for_webpack_compilation_to_complete_success"
 
   e2e_classroom_page:
     <<: *job_defaults
