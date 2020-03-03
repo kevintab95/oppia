@@ -113,7 +113,7 @@ jobs:
       - run:
           name: Run backend tests
           command: |
-            python -m scripts.run_backend_tests --generate_coverage_report --exclude_load_tests
+            python -m scripts.run_backend_tests --test_target="scripts.run_e2e_tests_test.RunE2ETestsTests"
 
   e2e_classroom_page:
     <<: *job_defaults
