@@ -3,9 +3,18 @@ workflows:
   circleci_tests:
     jobs:
       - setup
-      - backend_tests:
+      - typescript_tests:
           requires:
             - setup
+      - e2e_classroom_page:
+          requires:
+            - typescript_tests
+      - e2e_file_upload_features:
+          requires:
+            - typescript_tests
+      - e2e_topic_and_story_editor:
+          requires:
+            - typescript_tests
 
 var_for_docker_image: &docker_image circleci/python:2.7.17-browsers
 
@@ -95,7 +104,7 @@ jobs:
       - run:
           name: Run backend tests
           command: |
-            python -m scripts.run_backend_tests --test_target="scripts.run_e2e_tests_test.RunE2ETestsTests.test_build_js_files_in_dev_mode_with_exception_raised"
+            python -m scripts.run_backend_tests --generate_coverage_report --exclude_load_tests
 
   e2e_classroom_page:
     <<: *job_defaults
