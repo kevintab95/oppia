@@ -644,8 +644,7 @@ module.exports = {
       cleanAfterEveryBuildPatterns: ['**/*', '!*.html'],
     }),
     new ForkTsCheckerWebpackPlugin({
-      checkSyntacticErrors: true,
-      memoryLimit: 4096
+      checkSyntacticErrors: true
     }),
     new webpack.LoaderOptionsPlugin({
       options: {
@@ -666,13 +665,20 @@ module.exports = {
         path.resolve(__dirname, 'typings')
       ],
       use: [
-        'cache-loader',
-        'thread-loader',
+        {
+          loader: 'cache-loader'
+        },
+        {
+          loader: 'thread-loader',
+          options: {
+            // there should be 1 cpu for the fork-ts-checker-webpack-plugin
+            workers: require('os').cpus().length - 1,
+          },
+        },
         {
           loader: 'ts-loader',
           options: {
-            // this is needed for thread-loader to work correctly
-            happyPackMode: true
+            happyPackMode: true // IMPORTANT! use happyPackMode mode to speed-up compilation and reduce errors reported to webpack
           }
         }
       ]
