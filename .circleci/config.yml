@@ -60,8 +60,6 @@ jobs:
       - attach_workspace:
           at: /home/circleci/
       - run:
-          <<: *install_dependencies
-      - run:
           name: Run lint tests
           # All the python scripts should behave as modules. Files like the
           # pre_commit_linter and third_party_size_check need to import other
@@ -77,8 +75,6 @@ jobs:
       - attach_workspace:
           at: /home/circleci/
       - run:
-          <<: *install_dependencies
-      - run:
           name: Run typescript tests
           command: |
             python -m scripts.typescript_checks
@@ -89,8 +85,6 @@ jobs:
       - checkout
       - attach_workspace:
           at: /home/circleci/
-      - run:
-          <<: *install_dependencies
       - run:
           name: Run frontend tests
           command: |
@@ -109,8 +103,6 @@ jobs:
       - attach_workspace:
           at: /home/circleci/
       - run:
-          <<: *install_dependencies
-      - run:
           name: Run backend tests
           command: |
             python -m scripts.run_backend_tests --generate_coverage_report --exclude_load_tests
@@ -121,8 +113,6 @@ jobs:
       - checkout
       - attach_workspace:
           at: /home/circleci/
-      - run:
-          <<: *install_dependencies
       - run:
           name: Run e2e classroom page test
           command: |
@@ -135,8 +125,6 @@ jobs:
       - attach_workspace:
           at: /home/circleci/
       - run:
-          <<: *install_dependencies
-      - run:
           name: Run e2e file upload features test
           command: |
             python -m scripts.run_e2e_tests --suite="fileUploadFeatures"
@@ -147,8 +135,6 @@ jobs:
       - checkout
       - attach_workspace:
           at: /home/circleci/
-      - run:
-          <<: *install_dependencies
       - run:
           name: Run e2e topic and story editor test
           command: |
