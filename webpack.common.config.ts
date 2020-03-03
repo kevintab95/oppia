@@ -643,9 +643,7 @@ module.exports = {
     new CleanWebpackPlugin({
       cleanAfterEveryBuildPatterns: ['**/*', '!*.html'],
     }),
-    new ForkTsCheckerWebpackPlugin({
-      checkSyntacticErrors: true
-    }),
+    new ForkTsCheckerWebpackPlugin(),
     new webpack.LoaderOptionsPlugin({
       options: {
         macros: {
@@ -678,7 +676,7 @@ module.exports = {
         {
           loader: 'ts-loader',
           options: {
-            happyPackMode: true // IMPORTANT! use happyPackMode mode to speed-up compilation and reduce errors reported to webpack
+            transpileOnly: true
           }
         }
       ]
