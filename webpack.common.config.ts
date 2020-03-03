@@ -644,7 +644,8 @@ module.exports = {
       cleanAfterEveryBuildPatterns: ['**/*', '!*.html'],
     }),
     new ForkTsCheckerWebpackPlugin({
-      checkSyntacticErrors: true
+      checkSyntacticErrors: true,
+      memoryLimit: 4096
     }),
     new webpack.LoaderOptionsPlugin({
       options: {
