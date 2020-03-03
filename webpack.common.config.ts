@@ -643,7 +643,9 @@ module.exports = {
     new CleanWebpackPlugin({
       cleanAfterEveryBuildPatterns: ['**/*', '!*.html'],
     }),
-    new ForkTsCheckerWebpackPlugin(),
+    new ForkTsCheckerWebpackPlugin({
+      checkSyntacticErrors: true
+    }),
     new webpack.LoaderOptionsPlugin({
       options: {
         macros: {
@@ -665,6 +667,13 @@ module.exports = {
       use: [
         {
           loader: 'cache-loader'
+        },
+        {
+          loader: 'thread-loader',
+          options: {
+            // there should be 1 cpu for the fork-ts-checker-webpack-plugin
+            workers: require('os').cpus().length - 1,
+          },
         },
         {
           loader: 'ts-loader',
