@@ -259,7 +259,7 @@ def build_js_files(dev_mode_setting):
             with python_utils.open_file(HASHES_FILE_PATH, 'w') as hash_file:
                 hash_file.write('{}')
         try:
-            common.run_cmd(
+            subprocess.check_call(
                 [common.NODE_BIN_PATH, WEBPACK_BIN_PATH, '--config',
                  'webpack.dev.config.ts'])
         except subprocess.CalledProcessError as error:
