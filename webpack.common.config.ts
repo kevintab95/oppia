@@ -643,7 +643,9 @@ module.exports = {
     new CleanWebpackPlugin({
       cleanAfterEveryBuildPatterns: ['**/*', '!*.html'],
     }),
-    new ForkTsCheckerWebpackPlugin(),
+    new ForkTsCheckerWebpackPlugin({
+      checkSyntacticErrors: true
+    }),
     new webpack.LoaderOptionsPlugin({
       options: {
         macros: {
@@ -663,11 +665,13 @@ module.exports = {
         path.resolve(__dirname, 'typings')
       ],
       use: [
+        'cache-loader',
+        'thread-loader',
         {
           loader: 'ts-loader',
           options: {
-            // fork-ts-checker plugin does the type checking.
-            transpileOnly: true
+            // this is needed for thread-loader to work correctly
+            happyPackMode: true
           }
         }
       ]
