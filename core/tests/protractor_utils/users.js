@@ -33,7 +33,9 @@ var login = function(email, isSuperAdmin = false) {
   driver.findElement(protractor.By.name('email')).clear();
   driver.findElement(protractor.By.name('email')).sendKeys(email);
   if (isSuperAdmin) {
-    driver.findElement(protractor.By.name('admin')).click();
+    expect(driver.findElement(protractor.By.id('admin')).isSelected()).toBe(false);
+    driver.findElement(protractor.By.id('admin')).click();
+    expect(driver.findElement(protractor.By.id('admin')).isSelected()).toBe(true);
   }
   driver.findElement(protractor.By.id('submit-login')).click();
 };
