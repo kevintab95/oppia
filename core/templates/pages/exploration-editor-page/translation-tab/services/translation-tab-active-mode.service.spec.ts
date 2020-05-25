@@ -65,4 +65,7 @@ describe('Translation tab active mode service', function() {
     expect(ttams.isVoiceoverModeActive()).toBeFalsy();
     expect(ttams.isTranslationModeActive()).toBeTruthy();
   });
+  afterAll(function() {
+    delete require.cache[module.id];
+  });
 });

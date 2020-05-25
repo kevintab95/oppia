@@ -772,4 +772,7 @@ describe('Image preloader service', function() {
     expect(successHandler).not.toHaveBeenCalled();
     expect(failHandler).toHaveBeenCalled();
   });
+  afterAll(function() {
+    delete require.cache[module.id];
+  });
 });

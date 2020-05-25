@@ -40,12 +40,44 @@ import {
 } from '@angular/platform-browser-dynamic/testing';
 
 declare const require: any;
+declare let heapSize: number;
 
 // First, initialize the Angular testing environment.
 getTestBed().initTestEnvironment(
   BrowserDynamicTestingModule,
   platformBrowserDynamicTesting()
 );
+jasmine.getEnv().addReporter({
+  jasmineStarted: function(suiteInfo) {
+    heapSize = performance.memory.usedJSHeapSize;
+  },
+  // suiteStarted: function(result) {
+  //   // console.log('Suite started: ' + result.description);
+  //   heapSize = performance.memory.usedJSHeapSize;
+  //   // console.log(`heapSize before starting: ${(heapSize / 1024).toFixed(2)} KB`);
+  // },
+  suiteDone: function(result) {
+    // console.log('Suite: ' + result.description + ' was ' + result.status);
+    var difference = (performance.memory.usedJSHeapSize - heapSize) / 1024;
+    // if (difference < 1) {
+    //   return;
+    // }
+    if (result.description !== 'Editable collection backend API service') {
+      return;
+    }
+    console.debug(`
+    heapSize difference after completion of suite: ${result.description} ${result.status}
+    ${difference.toFixed(2)} KB
+    `);
+    heapSize = performance.memory.usedJSHeapSize;
+    // console.log(context.keys().length);
+  }
+  // specDone: function(result) {
+  //   console.log('Spec: ' + result.description + ' was ' + result.status);
+  //   console.info(`heapSize: ${(performance.memory.usedJSHeapSize / (1024 * 1024)).toFixed(2)} MB`);
+  //   console.log(context.keys().length);
+  // }
+});
 
 // Then we find all the tests, as well as any controller, directive,
 // service/factory files.

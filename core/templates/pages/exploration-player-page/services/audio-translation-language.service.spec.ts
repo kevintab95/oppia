@@ -230,4 +230,7 @@ describe('Audio translation language service', () => {
     atls.clearCurrentAudioLanguageCode();
     expect(atls.getCurrentAudioLanguageDescription()).toBe(null);
   });
+  afterAll(function() {
+    delete require.cache[module.id];
+  });
 });

@@ -333,5 +333,9 @@ describe('Exploration editor tab controller', function() {
         'stateEditorInitialized', ess.getState('Third State')
       );
     });
+
+    afterAll(function() {
+      delete require.cache[module.id];
+    });
   });
 });

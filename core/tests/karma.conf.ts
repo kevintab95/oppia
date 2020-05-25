@@ -89,14 +89,17 @@ module.exports = function(config) {
       }
     },
     autoWatch: true,
-    browsers: ['CI_Chrome'],
+    browsers: ['Chrome'],
+    client: {
+      captureConsole: true
+    },
     // Kill the browser if it does not capture in the given timeout [ms].
     captureTimeout: 60000,
     browserNoActivityTimeout: 120000,
     browserDisconnectTimeout: 60000,
     browserDisconnectTolerance: 3,
     browserConsoleLogOptions: {
-      level: 'log',
+      level: 'debug',
       format: '%b %T: %m',
       terminal: true
     },
