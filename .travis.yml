@@ -90,7 +90,7 @@ script:
 - if [ "$RUN_E2E_TESTS_PUBLICATION" == 'true' ]; then travis_retry python -m scripts.run_e2e_tests --suite="publication" --prod_env; fi
 - if [ "$RUN_E2E_TESTS_SKILL_EDITOR" == 'true' ]; then travis_retry python -m scripts.run_e2e_tests --suite="skillEditor" --prod_env; fi
 - if [ "$RUN_E2E_TESTS_SUBSCRIPTIONS" == 'true' ]; then travis_retry python -m scripts.run_e2e_tests --suite="subscriptions" --prod_env; fi
-- if [ "$RUN_E2E_TESTS_TOPICS_AND_SKILLS_DASHBOARD" == 'true' ]; then travis_retry python -m scripts.run_e2e_tests --suite="topicsAndSkillsDashboard"; fi
+- if [ "$RUN_E2E_TESTS_TOPICS_AND_SKILLS_DASHBOARD" == 'true' ]; then travis_retry python -m scripts.run_e2e_tests --suite="topicsAndSkillsDashboard" --prod_env; fi
 - if [ "$RUN_E2E_TESTS_TOPIC_AND_STORY_EDITOR" == 'true' ]; then travis_retry python -m scripts.run_e2e_tests --suite="topicAndStoryEditor"; fi
 
 
