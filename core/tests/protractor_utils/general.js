@@ -21,7 +21,6 @@ var ExplorationEditorPage = require(
   '../protractor_utils/ExplorationEditorPage.js');
 var waitFor = require('./waitFor.js');
 
-const sourceMappedStackTrace = require('sourcemapped-stacktrace');
 
 var scrollToTop = async function() {
   await browser.executeScript('window.scrollTo(0,0);');
@@ -53,10 +52,7 @@ var checkForConsoleErrors = async function(errorsToIgnore) {
         }
       }
       if (errorFatal) {
-        sourceMappedStackTrace.mapStackTrace(
-          browserLogs[i].stack, function(mappedStack) {
-            fatalErrors.push(mappedStack.join('\n'));
-          });
+        fatalErrors.push(browserLogs[i]);
       }
     }
   }
