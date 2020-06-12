@@ -26,7 +26,7 @@ var DEFAULT_WAIT_TIME_MSECS = browser.isMobile ? 20000 : 10000;
 
 var alertToBePresent = async function() {
   await browser.wait(
-    until.alertIsPresent(), DEFAULT_WAIT_TIME_MSECS,
+    await until.alertIsPresent(), DEFAULT_WAIT_TIME_MSECS,
     'Alert box took too long to appear.');
 };
 
