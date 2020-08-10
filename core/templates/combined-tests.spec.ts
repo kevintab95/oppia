@@ -62,6 +62,12 @@ getTestBed().initTestEnvironment(
   platformBrowserDynamicTesting()
 );
 
+jasmine.getEnv().addReporter({
+  specStarted: function(result) {
+    console.log('Suite started: ' + result.description);
+  }
+});
+
 // Then we find all the tests, as well as any controller, directive,
 // service/factory files.
 // All files from the services_sources folder are exempted, because they
