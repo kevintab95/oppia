@@ -56,6 +56,7 @@ class TopicModel(base_models.VersionedModel):
     # The canonical name of the topic, created by making `name` lowercase.
     canonical_name = ndb.StringProperty(required=True, indexed=True)
     # The abbreviated name of the topic.
+    # DEPRECATED in v3.0.2. Do not use.
     abbreviated_name = ndb.StringProperty(indexed=True, default='')
     # The thumbnail filename of the topic.
     thumbnail_filename = ndb.StringProperty(indexed=True)
