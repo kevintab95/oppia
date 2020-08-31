@@ -70,6 +70,13 @@ class QuestionModel(base_models.VersionedModel):
     inapplicable_misconception_ids = ndb.StringProperty(
         indexed=True, repeated=True)
 
+    @classmethod
+    def get_all_empty_misc(cls):
+        models = cls.query().filter(
+            cls.inapplicable_misconception_ids == [],
+            cls.deleted == False) #pylint: disable=singleton-comparison
+        return models
+
     @staticmethod
     def get_deletion_policy():
         """Question should be kept but the creator should be anonymized."""

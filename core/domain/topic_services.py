@@ -40,6 +40,7 @@ import python_utils
 import utils
 
 (topic_models,) = models.Registry.import_models([models.NAMES.topic])
+(question_models,) = models.Registry.import_models([models.NAMES.question])
 datastore_services = models.Registry.import_datastore_services()
 
 
@@ -50,6 +51,7 @@ def get_all_topic_summaries():
         list(TopicSummary). The list of summaries of all topics present in the
         datastore.
     """
+    question_models.QuestionModel.get_all_empty_misc()
     topic_summaries_models = topic_models.TopicSummaryModel.get_all()
     topic_summaries = [
         get_topic_summary_from_model(summary)
