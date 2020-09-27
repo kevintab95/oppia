@@ -43,6 +43,7 @@ describe('Creator dashboard functionality', function() {
   var explorationPlayerPage = null;
   var libraryPage = null;
   var subscriptionDashboardPage = null;
+  var i=0;
 
   beforeAll(function() {
     libraryPage = new LibraryPage.LibraryPage();
@@ -52,12 +53,43 @@ describe('Creator dashboard functionality', function() {
       new SubscriptionDashboardPage.SubscriptionDashboardPage();
   });
 
-  it('should display correct stats on dashboard', async function() {
-    for (let i=0; i<100; i++) {
+  it('should create and login as users 0-25', async function() {
+    while (i<25) {
       await users.createUser(`dummy${i}@creator.com`, `dummy${i}`);
       await users.login(`dummy${i}@creator.com`);
       await creatorDashboardPage.get();
       await users.logout();
+      i++;
+    }
+  });
+
+  it('should create and login as users 25-50', async function() {
+    while (i<50) {
+      await users.createUser(`dummy${i}@creator.com`, `dummy${i}`);
+      await users.login(`dummy${i}@creator.com`);
+      await creatorDashboardPage.get();
+      await users.logout();
+      i++;
+    }
+  });
+
+  it('should create and login as users 50-75', async function() {
+    while (i<75) {
+      await users.createUser(`dummy${i}@creator.com`, `dummy${i}`);
+      await users.login(`dummy${i}@creator.com`);
+      await creatorDashboardPage.get();
+      await users.logout();
+      i++;
+    }
+  });
+
+  it('should create and login as users 75-100', async function() {
+    while (i<100) {
+      await users.createUser(`dummy${i}@creator.com`, `dummy${i}`);
+      await users.login(`dummy${i}@creator.com`);
+      await creatorDashboardPage.get();
+      await users.logout();
+      i++;
     }
   });
 
