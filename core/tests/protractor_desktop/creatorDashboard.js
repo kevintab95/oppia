@@ -93,6 +93,45 @@ describe('Creator dashboard functionality', function() {
     }
   });
 
+  it('should create and login as users 100-125', async function() {
+    while (i<125) {
+      await users.createUser(`dummy${i}@creator.com`, `dummy${i}`);
+      await users.login(`dummy${i}@creator.com`);
+      await creatorDashboardPage.get();
+      await users.logout();
+      i++;
+    }
+  });
+
+  it('should create and login as users 125-150', async function() {
+    while (i<150) {
+      await users.createUser(`dummy${i}@creator.com`, `dummy${i}`);
+      await users.login(`dummy${i}@creator.com`);
+      await creatorDashboardPage.get();
+      await users.logout();
+      i++;
+    }
+  });
+
+  it('should create and login as users 150-175', async function() {
+    while (i<175) {
+      await users.createUser(`dummy${i}@creator.com`, `dummy${i}`);
+      await users.login(`dummy${i}@creator.com`);
+      await creatorDashboardPage.get();
+      await users.logout();
+      i++;
+    }
+  });
+
+  it('should create and login as users 175-200', async function() {
+    while (i<200) {
+      await users.createUser(`dummy${i}@creator.com`, `dummy${i}`);
+      await users.login(`dummy${i}@creator.com`);
+      await creatorDashboardPage.get();
+      await users.logout();
+      i++;
+    }
+  });
   // it('should work fine in grid view', async function() {
   //   var feedback = 'A good exploration. Would love to see a few more questions';
   //   // Create required users.
