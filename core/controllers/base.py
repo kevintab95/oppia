@@ -612,12 +612,15 @@ class CsrfTokenManager(python_utils.OBJECT):
             issued_on = int(parts[0])
             age = cls._get_current_time() - issued_on
             if age > cls._CSRF_TOKEN_AGE_SECS:
+                logging.error('too old: ', age)
                 return False
 
             authentic_token = cls._create_token(user_id, issued_on)
             if authentic_token == token:
                 return True
 
+            logging.error('expected token: ', authentic_token)
+            logging.error('actual token: ', token)
             return False
         except Exception:
             return False
