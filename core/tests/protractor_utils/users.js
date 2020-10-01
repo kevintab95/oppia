@@ -27,7 +27,38 @@ var login = async function(email, isSuperAdmin = false) {
   // Use of element is not possible because the login page is non-angular.
   // The full url is also necessary.
   var driver = browser.driver;
-  await driver.get(general.SERVER_URL_PREFIX + general.LOGIN_URL_SUFFIX);
+  await driver.get(general.SERVER_URL_PREFIX);
+  var loginButton = element(by.css('.protractor-mobile-test-login'));
+  await loginButton.click();
+  await browser.sleep(1000);
+  // expect(await browser.getCurrentUrl()).toEqual(
+  //   'http://localhost:9001/_ah/login?continue=http%3A//' +
+  //   'localhost%3A9001/signup%3Freturn_url%3D%252F'
+  // );
+  // await browser.wait(
+  //   async() => {
+  //     try {
+  //       var elements = await driver.findElements(protractor.By.name('email'));
+  //       return elements.length !== 1;
+  //     } catch (e) {
+  //       return true
+  //     }
+  //   }, waitFor.DEFAULT_WAIT_TIME_MSECS, 'Login page takes too long to load.');
+  // await browser.wait(
+  //   async() => {
+  //     debugger;
+  //     var url = await browser.getCurrentUrl();
+  //     return url !== (
+  //       'http://localhost:9001/_ah/login?continue=http%3A//' +
+  //       'localhost%3A9001/signup%3Freturn_url%3D%252F');
+  //   }, waitFor.DEFAULT_WAIT_TIME_MSECS, 'Login page takes too long to load.');
+  // await browser.wait(
+  //   async() => {
+  //     let loginStatusHeaderElement = (
+  //       await driver.findElement(protractor.By.tagName('h3')));
+  //     let text = await loginStatusHeaderElement.getText();
+  //     return text !== 'Not logged in';
+  //   }, waitFor.DEFAULT_WAIT_TIME_MSECS, 'Login page takes too long to load.');
 
   await (await driver.findElement(protractor.By.name('email'))).clear();
   await (await driver.findElement(protractor.By.name('email'))).sendKeys(email);
@@ -35,6 +66,16 @@ var login = async function(email, isSuperAdmin = false) {
     await (await driver.findElement(protractor.By.name('admin'))).click();
   }
   await (await driver.findElement(protractor.By.id('submit-login'))).click();
+  await browser.wait(
+    async() => {
+      var url = await browser.getCurrentUrl();
+      return url !== (
+        'http://localhost:9001/_ah/login?continue=http%3A//' +
+        'localhost%3A9001/signup%3Freturn_url%3D%252F');
+    }, waitFor.DEFAULT_WAIT_TIME_MSECS, 'Sign up page takes too long to load.');
+    var usernameInput = element(by.css('.protractor-test-username-input'));
+    await waitFor.visibilityOf(
+      usernameInput, 'No username input field was displayed');
 };
 
 var logout = async function() {
@@ -50,10 +91,10 @@ var _completeSignup = async function(username) {
   // as a client side navigation and the tests fail since Angular is
   // not found due to the navigation interfering with protractor's
   // bootstrapping.
-  await browser.waitForAngularEnabled(false);
-  await browser.get('/signup?return_url=http%3A%2F%2Flocalhost%3A9001%2F');
-  await browser.waitForAngularEnabled(true);
-  await waitFor.pageToFullyLoad();
+  // await browser.waitForAngularEnabled(false);
+  // await browser.get('/signup?return_url=http%3A%2F%2Flocalhost%3A9001%2F');
+  // await browser.waitForAngularEnabled(true);
+  // await waitFor.pageToFullyLoad();
   var usernameInput = element(by.css('.protractor-test-username-input'));
   var agreeToTermsCheckbox = element(
     by.css('.protractor-test-agree-to-terms-checkbox'));
