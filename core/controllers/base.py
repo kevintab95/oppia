@@ -607,6 +607,7 @@ class CsrfTokenManager(python_utils.OBJECT):
         try:
             parts = token.split('/')
             if len(parts) != 2:
+                logging.error('parts: %s' % token)
                 return False
 
             issued_on = int(parts[0])
@@ -622,7 +623,8 @@ class CsrfTokenManager(python_utils.OBJECT):
             logging.error('expected token: %s' % authentic_token)
             logging.error('actual token: %s' % token)
             return False
-        except Exception:
+        except Exception as e:
+            logging.error('exception: %s' % e)
             return False
 
 
