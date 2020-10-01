@@ -637,6 +637,8 @@ class CsrfTokenHandler(BaseHandler):
     def get(self):
         csrf_token = CsrfTokenManager.create_csrf_token(
             self.user_id)
+        logging.error('user id: %s' % self.user_id)
+        logging.error('csrf token: %s' % csrf_token)
         self.render_json({
             'token': csrf_token,
         })
