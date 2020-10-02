@@ -157,6 +157,7 @@ class BaseHandler(webapp2.RequestHandler):
     def __init__(self, request, response):  # pylint: disable=super-init-not-called
         # Set self.request, self.response and self.app.
         self.initialize(request, response)
+        logging.error('REQUEST STARTED: %s' % self.request.uri)
 
         self.start_time = datetime.datetime.utcnow()
 
@@ -227,6 +228,8 @@ class BaseHandler(webapp2.RequestHandler):
             Exception. The CSRF token is missing.
             UnauthorizedUserException. The CSRF token is invalid.
         """
+        logging.error('dispatch: user_id: %s' % self.user_id)
+        logging.error('dispatch: user_name: %s' % self.username)
         # If the request is to the old demo server, redirect it permanently to
         # the new demo server.
         if self.request.uri.startswith('https://oppiaserver.appspot.com'):
@@ -623,8 +626,9 @@ class CsrfTokenManager(python_utils.OBJECT):
             if authentic_token == token:
                 return True
 
-            logging.error('issued on: %s' % issued_on)
-            logging.error('user_id: %s' % user_id)
+            logging.error('is_csrf_token_valid: issued on: %s' % issued_on)
+            logging.error('is_csrf_token_valid: user_id: %s' % user_id)
+            logging.error('is_csrf_token_valid: user_name: %s' % self.username)
             logging.error('expected token: %s' % authentic_token)
             logging.error('actual token: %s' % token)
             return False
@@ -642,8 +646,8 @@ class CsrfTokenHandler(BaseHandler):
     def get(self):
         csrf_token = CsrfTokenManager.create_csrf_token(
             self.user_id)
-        logging.error('user id: %s' % self.user_id)
-        logging.error('csrf token: %s' % csrf_token)
+        logging.error('CsrfTokenHandler: user id: %s' % self.user_id)
+        logging.error('CsrfTokenHandler: csrf token: %s' % csrf_token)
         self.render_json({
             'token': csrf_token,
         })
