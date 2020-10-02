@@ -28,6 +28,7 @@ var login = async function(email, isSuperAdmin = false) {
   // The full url is also necessary.
   var driver = browser.driver;
   await driver.get(general.SERVER_URL_PREFIX + general.LOGIN_URL_SUFFIX);
+  await browser.manage().deleteAllCookies();
 
   await (await driver.findElement(protractor.By.name('email'))).clear();
   await (await driver.findElement(protractor.By.name('email'))).sendKeys(email);
@@ -53,6 +54,7 @@ var login = async function(email, isSuperAdmin = false) {
 var logout = async function() {
   await browser.get('/logout');
   await waitFor.pageToFullyLoad();
+  await browser.manage().deleteAllCookies();
 };
 
 // The user needs to log in immediately before this method is called. Note
