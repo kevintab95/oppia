@@ -51,19 +51,8 @@ var login = async function(email, isSuperAdmin = false) {
 };
 
 var logout = async function() {
-  var driver = browser.driver;
-  await driver.get(general.SERVER_URL_PREFIX + general.LOGIN_URL_SUFFIX);
-  await (await driver.findElement(protractor.By.id('submit-logout'))).click();
-  // The statement below uses a browser.wait() to determine if the user has
-  // logged out. Use of waitFor is not possible because the active page is
-  // non-angular.
-  await browser.wait(
-    async() => {
-      let loginStatusHeaderElement = (
-        await driver.findElement(protractor.By.tagName('h3')));
-      let text = await loginStatusHeaderElement.getText();
-      return text !== 'Not logged in';
-    }, waitFor.DEFAULT_WAIT_TIME_MSECS, 'Login takes too long.');
+  await browser.get('/logout');
+  await waitFor.pageToFullyLoad();
 };
 
 // The user needs to log in immediately before this method is called. Note
