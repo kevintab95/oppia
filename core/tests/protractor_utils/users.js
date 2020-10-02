@@ -66,6 +66,9 @@ var _completeSignup = async function(username) {
   // bootstrapping.
   await browser.waitForAngularEnabled(false);
   await browser.get('/signup?return_url=http%3A%2F%2Flocalhost%3A9001%2F');
+  let cookie = await browser.manage().getCookie('dev_appserver_login');
+  console.error(`Cookie value is: ${cookie.value}`);
+  expect(cookie.value).toBeDefined();
   await browser.waitForAngularEnabled(true);
   await waitFor.pageToFullyLoad();
   var usernameInput = element(by.css('.protractor-test-username-input'));
