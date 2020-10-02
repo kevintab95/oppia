@@ -531,10 +531,12 @@ class CsrfTokenManager(python_utils.OBJECT):
     def init_csrf_secret(cls):
         """Verify that non-default CSRF secret exists; creates one if not."""
 
+        logging.error('CSRF_SECRET.value: %s' % CSRF_SECRET.value)
         # Any non-default value is fine.
         if CSRF_SECRET.value and CSRF_SECRET.value != DEFAULT_CSRF_SECRET:
             return
 
+        logging.error('CSRF_SECRET.name: %s' % CSRF_SECRET.name)
         # Initialize to random value.
         config_services.set_property(
             feconf.SYSTEM_COMMITTER_ID, CSRF_SECRET.name,
@@ -557,6 +559,7 @@ class CsrfTokenManager(python_utils.OBJECT):
         # name, hash of the time issued and plain text of the time issued.
 
         if user_id is None:
+            logging.error('user_id is None in _create_token')
             user_id = cls._USER_ID_DEFAULT
 
         # Round time to seconds.
@@ -620,6 +623,8 @@ class CsrfTokenManager(python_utils.OBJECT):
             if authentic_token == token:
                 return True
 
+            logging.error('issued on: %s' % issued_on)
+            logging.error('user_id: %s' % user_id)
             logging.error('expected token: %s' % authentic_token)
             logging.error('actual token: %s' % token)
             return False
