@@ -228,8 +228,10 @@ class BaseHandler(webapp2.RequestHandler):
             Exception. The CSRF token is missing.
             UnauthorizedUserException. The CSRF token is invalid.
         """
-        logging.error('dispatch: user_id: %s' % self.user_id)
-        logging.error('dispatch: user_name: %s' % self.username)
+        logging.error(
+            '%s dispatch: user_id: %s' % (self.request.uri, self.user_id))
+        logging.error(
+            '%s dispatch: user_name: %s' % (self.request.uri, % self.username))
         # If the request is to the old demo server, redirect it permanently to
         # the new demo server.
         if self.request.uri.startswith('https://oppiaserver.appspot.com'):
@@ -273,7 +275,7 @@ class BaseHandler(webapp2.RequestHandler):
                         'Please report this bug.')
 
                 is_csrf_token_valid = CsrfTokenManager.is_csrf_token_valid(
-                    self.user_id, csrf_token)
+                    self.user_id, csrf_token, self.request.uri, self.username)
 
                 if not is_csrf_token_valid:
                     raise self.UnauthorizedUserException(
@@ -600,7 +602,7 @@ class CsrfTokenManager(python_utils.OBJECT):
         return cls._create_token(user_id, cls._get_current_time())
 
     @classmethod
-    def is_csrf_token_valid(cls, user_id, token):
+    def is_csrf_token_valid(cls, user_id, token, request_uri, username):
         """Validates a given CSRF token.
 
         Args:
@@ -626,11 +628,16 @@ class CsrfTokenManager(python_utils.OBJECT):
             if authentic_token == token:
                 return True
 
-            logging.error('is_csrf_token_valid: issued on: %s' % issued_on)
-            logging.error('is_csrf_token_valid: user_id: %s' % user_id)
-            logging.error('is_csrf_token_valid: user_name: %s' % self.username)
-            logging.error('expected token: %s' % authentic_token)
-            logging.error('actual token: %s' % token)
+            logging.error(
+                '%s is_csrf_token_valid: issued on: %s' % (
+                    request_uri, issued_on))
+            logging.error('%s is_csrf_token_valid: user_id: %s' % (
+                request_uri, user_id))
+            logging.error('%s is_csrf_token_valid: user_name: %s' % (
+                request_uri, username))
+            logging.error('%s expected token: %s' % (
+                request_uri, authentic_token))
+            logging.error('%s actual token: %s' % (request_uri, token))
             return False
         except Exception as e:
             logging.error('exception: %s' % e)
