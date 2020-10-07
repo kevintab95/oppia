@@ -190,11 +190,12 @@ class BaseHandler(webapp2.RequestHandler):
                     self.gae_id, email)
                 logging.error(
                     '%s created new user id: %s :: %s' % (
-                        self.reques.uri, user_settings.user_id, email))
+                        self.request.uri, user_settings.user_id, email))
             else:
                 logging.error(
                     '%s found user id: %s :: %s' % (
-                        self.reques.uri, user_settings.user_id, email))
+                        self.request.uri, user_settings.user_id,
+                        user_settings.email))
             self.values['user_email'] = user_settings.email
             self.user_id = user_settings.user_id
 
