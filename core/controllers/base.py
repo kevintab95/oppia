@@ -231,7 +231,7 @@ class BaseHandler(webapp2.RequestHandler):
         logging.error(
             '%s dispatch: user_id: %s' % (self.request.uri, self.user_id))
         logging.error(
-            '%s dispatch: user_name: %s' % (self.request.uri, % self.username))
+            '%s dispatch: user_name: %s' % (self.request.uri, self.username))
         # If the request is to the old demo server, redirect it permanently to
         # the new demo server.
         if self.request.uri.startswith('https://oppiaserver.appspot.com'):
