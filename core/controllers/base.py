@@ -634,6 +634,10 @@ class CsrfTokenManager(python_utils.OBJECT):
 
             authentic_token = cls._create_token(user_id, issued_on)
             if authentic_token == token:
+                logging.error('%s is_csrf_token_valid: user_id: %s' % (
+                    request_uri, user_id))
+                logging.error('%s matching token: %s' % (
+                    request_uri, authentic_token))
                 return True
 
             logging.error(
