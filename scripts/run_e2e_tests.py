@@ -544,32 +544,31 @@ def main(args=None):
         build_js_files(
             dev_mode, deparallelize_terser=parsed_args.deparallelize_terser,
             source_maps=parsed_args.source_maps)
-    if parsed_args.build_only:
-        sys.exit(1)
-    version = (
-        parsed_args.chrome_driver_version or get_chrome_driver_version())
-    python_utils.PRINT('\n\nCHROMEDRIVER VERSION: %s\n\n' % version)
-    start_webdriver_manager(version)
+    if not parsed_args.build_only:
+        version = (
+            parsed_args.chrome_driver_version or get_chrome_driver_version())
+        python_utils.PRINT('\n\nCHROMEDRIVER VERSION: %s\n\n' % version)
+        start_webdriver_manager(version)
 
-    portserver_process = start_portserver()
-    atexit.register(cleanup_portserver, portserver_process)
-    start_google_app_engine_server(dev_mode, parsed_args.server_log_level)
+        portserver_process = start_portserver()
+        atexit.register(cleanup_portserver, portserver_process)
+        start_google_app_engine_server(dev_mode, parsed_args.server_log_level)
 
-    common.wait_for_port_to_be_open(WEB_DRIVER_PORT)
-    common.wait_for_port_to_be_open(GOOGLE_APP_ENGINE_PORT)
-    ensure_screenshots_dir_is_removed()
-    commands = [common.NODE_BIN_PATH]
-    if parsed_args.debug_mode:
-        commands.append('--inspect-brk')
-    # This flag ensures tests fail if waitFor calls time out.
-    commands.append('--unhandled-rejections=strict')
-    commands.append(PROTRACTOR_BIN_PATH)
-    commands.extend(get_e2e_test_parameters(
-        parsed_args.sharding_instances, parsed_args.suite, dev_mode))
+        common.wait_for_port_to_be_open(WEB_DRIVER_PORT)
+        common.wait_for_port_to_be_open(GOOGLE_APP_ENGINE_PORT)
+        ensure_screenshots_dir_is_removed()
+        commands = [common.NODE_BIN_PATH]
+        if parsed_args.debug_mode:
+            commands.append('--inspect-brk')
+        # This flag ensures tests fail if waitFor calls time out.
+        commands.append('--unhandled-rejections=strict')
+        commands.append(PROTRACTOR_BIN_PATH)
+        commands.extend(get_e2e_test_parameters(
+            parsed_args.sharding_instances, parsed_args.suite, dev_mode))
 
-    p = subprocess.Popen(commands)
-    p.communicate()
-    sys.exit(p.returncode)
+        p = subprocess.Popen(commands)
+        p.communicate()
+        sys.exit(p.returncode)
 
 
 if __name__ == '__main__':  # pragma: no cover
