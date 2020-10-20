@@ -152,6 +152,9 @@ jobs:
           at: /home/circleci/
       - webpack_build
       - run:
+          name: Set up python by installing protobuf and enum
+          command: pip install enum34==1.1.10 protobuf==3.13.0
+      - run:
           name: Run e2e navigation test
           command: |
             python -m scripts.run_e2e_tests --prod_env --deparallelize_terser --skip-install --skip-build --suite="navigation"
@@ -180,6 +183,9 @@ jobs:
       - attach_workspace:
           at: /home/circleci/
       - webpack_build
+      - run:
+          name: Set up python by installing protobuf and enum
+          command: pip install enum34==1.1.10 protobuf==3.13.0
       - run:
           name: Run e2e publication test
           command: |
@@ -211,6 +217,9 @@ jobs:
       - attach_workspace:
           at: /home/circleci/
       - webpack_build
+      - run:
+          name: Set up python by installing protobuf and enum
+          command: pip install enum34==1.1.10 protobuf==3.13.0
       - run:
           name: Run e2e users test
           command: |
@@ -246,6 +255,9 @@ jobs:
           at: /home/circleci/
       - webpack_build
       - run:
+          name: Set up python by installing protobuf and enum
+          command: pip install enum34==1.1.10 protobuf==3.13.0
+      - run:
           name: Run e2e file upload features test
           command: |
             python -m scripts.run_e2e_tests --skip-install --skip-build --suite="fileUploadFeatures"
@@ -272,6 +284,9 @@ jobs:
       - attach_workspace:
           at: /home/circleci/
       - webpack_build
+      - run:
+          name: Set up python by installing protobuf and enum
+          command: pip install enum34==1.1.10 protobuf==3.13.0
       - run:
           name: Run e2e topics and skills dashboard test
           command: |
