@@ -283,10 +283,13 @@ jobs:
       - install_chrome
       - attach_workspace:
           at: /home/circleci/
-      - webpack_build
       - run:
           name: Set up python by installing protobuf and enum
           command: pip install enum34==1.1.10 protobuf==3.13.0
+      - run:
+          name: Builds Javascript files
+          command: |
+            python -m scripts.run_e2e_tests --build-only --prod_env
       - run:
           name: Run e2e topics and skills dashboard test
           command: |
