@@ -538,13 +538,12 @@ def main(args=None):
 
     dev_mode = not parsed_args.prod_env
 
-    if parsed_args.skip_build:
-        build.modify_constants(prod_env=parsed_args.prod_env)
-    else:
+    if not parsed_args.skip_build:
         build_js_files(
             dev_mode, deparallelize_terser=parsed_args.deparallelize_terser,
             source_maps=parsed_args.source_maps)
     if not parsed_args.build_only:
+        build.modify_constants(prod_env=parsed_args.prod_env)
         version = (
             parsed_args.chrome_driver_version or get_chrome_driver_version())
         python_utils.PRINT('\n\nCHROMEDRIVER VERSION: %s\n\n' % version)
