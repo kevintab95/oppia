@@ -146,6 +146,7 @@
         "allowEmptyCatch": true
       }
     ],
+    "no-floating-promises": "error",
     "no-multi-spaces": [
       "error"
     ],
