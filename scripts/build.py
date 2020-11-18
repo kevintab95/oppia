@@ -645,9 +645,9 @@ def build_using_webpack(config_path):
 
     python_utils.PRINT('Building webpack')
 
-    cmd = '%s %s --config %s' % (
-        common.NODE_BIN_PATH, WEBPACK_FILE, config_path)
-    subprocess.check_call(cmd, shell=True)
+    p = subprocess.Popen(
+        [common.NODE_BIN_PATH, '--config', WEBPACK_FILE, config_path])
+    p.communicate()
 
 
 def hash_should_be_inserted(filepath):
