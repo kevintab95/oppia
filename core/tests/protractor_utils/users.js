@@ -28,6 +28,7 @@ var login = async function(email, isSuperAdmin = false) {
   // The full url is also necessary.
   var driver = browser.driver;
   await driver.get(general.SERVER_URL_PREFIX + general.LOGIN_URL_SUFFIX);
+  await browser.manage().deleteAllCookies();
 
   await (await driver.findElement(protractor.By.name('email'))).clear();
   await (await driver.findElement(protractor.By.name('email'))).sendKeys(email);
@@ -51,9 +52,9 @@ var login = async function(email, isSuperAdmin = false) {
 };
 
 var logout = async function() {
-  var driver = browser.driver;
-  await driver.get(general.SERVER_URL_PREFIX + general.LOGIN_URL_SUFFIX);
-  await (await driver.findElement(protractor.By.id('submit-logout'))).click();
+  await browser.get('/logout');
+  await waitFor.pageToFullyLoad();
+  await browser.manage().deleteAllCookies();
 };
 
 // The user needs to log in immediately before this method is called. Note
@@ -65,6 +66,9 @@ var _completeSignup = async function(username) {
   // bootstrapping.
   await browser.waitForAngularEnabled(false);
   await browser.get('/signup?return_url=http%3A%2F%2Flocalhost%3A9001%2F');
+  let cookie = await browser.manage().getCookie('dev_appserver_login');
+  console.error(`Cookie value is: ${cookie.value}`);
+  expect(cookie.value).toBeDefined();
   await browser.waitForAngularEnabled(true);
   await waitFor.pageToFullyLoad();
   var usernameInput = element(by.css('.protractor-test-username-input'));

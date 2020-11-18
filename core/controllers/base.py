@@ -157,6 +157,7 @@ class BaseHandler(webapp2.RequestHandler):
     def __init__(self, request, response):  # pylint: disable=super-init-not-called
         # Set self.request, self.response and self.app.
         self.initialize(request, response)
+        logging.error('REQUEST STARTED: %s' % self.request.uri)
 
         self.start_time = datetime.datetime.utcnow()
 
@@ -187,6 +188,14 @@ class BaseHandler(webapp2.RequestHandler):
                 email = current_user_services.get_current_user_email()
                 user_settings = user_services.create_new_user(
                     self.gae_id, email)
+                logging.error(
+                    '%s created new user id: %s :: %s' % (
+                        self.request.uri, user_settings.user_id, email))
+            else:
+                logging.error(
+                    '%s found user id: %s :: %s' % (
+                        self.request.uri, user_settings.user_id,
+                        user_settings.email))
             self.values['user_email'] = user_settings.email
             self.user_id = user_settings.user_id
 
@@ -227,6 +236,10 @@ class BaseHandler(webapp2.RequestHandler):
             Exception. The CSRF token is missing.
             UnauthorizedUserException. The CSRF token is invalid.
         """
+        logging.error(
+            '%s dispatch: user_id: %s' % (self.request.uri, self.user_id))
+        logging.error(
+            '%s dispatch: user_name: %s' % (self.request.uri, self.username))
         # If the request is to the old demo server, redirect it permanently to
         # the new demo server.
         if self.request.uri.startswith('https://oppiaserver.appspot.com'):
@@ -270,7 +283,7 @@ class BaseHandler(webapp2.RequestHandler):
                         'Please report this bug.')
 
                 is_csrf_token_valid = CsrfTokenManager.is_csrf_token_valid(
-                    self.user_id, csrf_token)
+                    self.user_id, csrf_token, self.request.uri, self.username)
 
                 if not is_csrf_token_valid:
                     raise self.UnauthorizedUserException(
@@ -531,10 +544,12 @@ class CsrfTokenManager(python_utils.OBJECT):
     def init_csrf_secret(cls):
         """Verify that non-default CSRF secret exists; creates one if not."""
 
+        logging.error('CSRF_SECRET.value: %s' % CSRF_SECRET.value)
         # Any non-default value is fine.
         if CSRF_SECRET.value and CSRF_SECRET.value != DEFAULT_CSRF_SECRET:
             return
 
+        logging.error('CSRF_SECRET.name: %s' % CSRF_SECRET.name)
         # Initialize to random value.
         config_services.set_property(
             feconf.SYSTEM_COMMITTER_ID, CSRF_SECRET.name,
@@ -557,6 +572,7 @@ class CsrfTokenManager(python_utils.OBJECT):
         # name, hash of the time issued and plain text of the time issued.
 
         if user_id is None:
+            logging.error('user_id is None in _create_token')
             user_id = cls._USER_ID_DEFAULT
 
         # Round time to seconds.
@@ -594,7 +610,7 @@ class CsrfTokenManager(python_utils.OBJECT):
         return cls._create_token(user_id, cls._get_current_time())
 
     @classmethod
-    def is_csrf_token_valid(cls, user_id, token):
+    def is_csrf_token_valid(cls, user_id, token, request_uri, username):
         """Validates a given CSRF token.
 
         Args:
@@ -607,19 +623,36 @@ class CsrfTokenManager(python_utils.OBJECT):
         try:
             parts = token.split('/')
             if len(parts) != 2:
+                logging.error('parts: %s' % token)
                 return False
 
             issued_on = int(parts[0])
             age = cls._get_current_time() - issued_on
             if age > cls._CSRF_TOKEN_AGE_SECS:
+                logging.error('too old: %s' % age)
                 return False
 
             authentic_token = cls._create_token(user_id, issued_on)
             if authentic_token == token:
+                logging.error('%s is_csrf_token_valid: user_id: %s' % (
+                    request_uri, user_id))
+                logging.error('%s matching token: %s' % (
+                    request_uri, authentic_token))
                 return True
 
+            logging.error(
+                '%s is_csrf_token_valid: issued on: %s' % (
+                    request_uri, issued_on))
+            logging.error('%s is_csrf_token_valid: user_id: %s' % (
+                request_uri, user_id))
+            logging.error('%s is_csrf_token_valid: user_name: %s' % (
+                request_uri, username))
+            logging.error('%s expected token: %s' % (
+                request_uri, authentic_token))
+            logging.error('%s actual token: %s' % (request_uri, token))
             return False
-        except Exception:
+        except Exception as e:
+            logging.error('exception: %s' % e)
             return False
 
 
@@ -632,6 +665,8 @@ class CsrfTokenHandler(BaseHandler):
     def get(self):
         csrf_token = CsrfTokenManager.create_csrf_token(
             self.user_id)
+        logging.error('CsrfTokenHandler: user id: %s' % self.user_id)
+        logging.error('CsrfTokenHandler: csrf token: %s' % csrf_token)
         self.render_json({
             'token': csrf_token,
         })
