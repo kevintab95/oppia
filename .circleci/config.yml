@@ -101,6 +101,32 @@ commands:
               circleci-agent step halt
             fi
 
+  webpack_build:
+    # This step represents the build process. It is meant to help developers
+    # detect build related issues in the config file. It does not affect
+    # performance.
+    description: "Build Javascript files"
+    parameters:
+      target_env:
+        type: string
+    steps:
+      - when:
+          condition:
+            equal: [ "prod", << parameters.target_env >> ]
+          steps:
+            - run:
+                name: Builds Javascript files (prod mode)
+                command: |
+                  python -m scripts.run_e2e_tests --deparallelize_terser --prod_env --build-only
+      - when:
+          condition:
+            equal: [ "dev", << parameters.target_env >> ]
+          steps:
+            - run:
+                name: Builds Javascript files (dev mode)
+                command: |
+                  python -m scripts.run_e2e_tests --deparallelize_terser --build-only
+
 jobs:
   setup_and_typescript_tests:
     <<: *job_defaults
@@ -145,10 +171,12 @@ jobs:
       - run:
           name: Set up python by installing protobuf and enum
           command: pip install enum34==1.1.10 protobuf==3.13.0
+      - webpack_build:
+          target_env: "prod"
       - run:
           name: Run e2e navigation test
           command: |
-            python -m scripts.run_e2e_tests --prod_env --deparallelize_terser --skip-install --suite="navigation"
+            python -m scripts.run_e2e_tests --prod_env --deparallelize_terser --skip-install --skip-build --suite="navigation"
       - check_release_changelog_update_branch
       - run:
           name: Run e2e admin page test
@@ -229,6 +257,10 @@ jobs:
           name: Run e2e profileFeatures test
           command: |
             python -m scripts.run_e2e_tests --skip-install --skip-build --suite="profileFeatures" --prod_env
+      - run:
+          name: Run e2e wipeout test
+          command: |
+            python -m scripts.run_e2e_tests --skip-install --skip-build --suite="wipeout" --prod_env
 
   # Non-prod e2e Tests
   # The following tests must be run in a non-production environment because they are uploading files.
@@ -245,10 +277,12 @@ jobs:
       - run:
           name: Set up python by installing protobuf and enum
           command: pip install enum34==1.1.10 protobuf==3.13.0
+      - webpack_build:
+          target_env: "dev"
       - run:
           name: Run e2e file upload features test
           command: |
-            python -m scripts.run_e2e_tests --skip-install --suite="fileUploadFeatures"
+            python -m scripts.run_e2e_tests --skip-install --skip-build --suite="fileUploadFeatures"
       - run:
           name: Run e2e play voiceovers test
           command: |
@@ -261,6 +295,12 @@ jobs:
           name: Run e2e contributor dashboard test
           command: |
             python -m scripts.run_e2e_tests --skip-install --skip-build --suite="contributorDashboard"
+      # Feature Gating test suites must run in non-production environment because
+      # the dummy_feature being used must not be enabled in production environment.
+      - run:
+          name: Run e2e feature gating test
+          command: |
+            python -m scripts.run_e2e_tests --skip-install --skip-build --suite="featureGating"
 
   e2e_non_prod_new_structure_tests:
     <<: *job_defaults
@@ -274,10 +314,12 @@ jobs:
       - run:
           name: Set up python by installing protobuf and enum
           command: pip install enum34==1.1.10 protobuf==3.13.0
+      - webpack_build:
+          target_env: "dev"
       - run:
           name: Run e2e topics and skills dashboard test
           command: |
-            python -m scripts.run_e2e_tests --skip-install --suite="topicsAndSkillsDashboard" --server_log_level=info
+            python -m scripts.run_e2e_tests --skip-install --skip-build --suite="topicsAndSkillsDashboard" --server_log_level=info
       - run:
           name: Run e2e topics and story editor
           command: |
@@ -290,6 +332,10 @@ jobs:
           name: Run e2e topic and story editor test
           command: |
             python -m scripts.run_e2e_tests --skip-install --skip-build --suite="topicAndStoryEditorFileUploadFeatures"
+      - run:
+          name: Run e2e topic and story viewer test
+          command: |
+            python -m scripts.run_e2e_tests --skip-install --skip-build --suite="topicAndStoryViewer"
 
 notify:
   webhooks:
