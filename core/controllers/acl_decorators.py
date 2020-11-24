@@ -152,18 +152,25 @@ def can_play_exploration(handler):
         Raises:
             PageNotFoundException. The page is not found.
         """
-        if exploration_id in feconf.DISABLED_EXPLORATION_IDS:
+        # If the exploration id contains a single occurrence of trailing
+        # characters listed in INVALID_TRAILING_CHARS_IN_EXP_ID, remove that
+        # character and proceed.
+        exp_id = (
+            exploration_id[:-1]
+            if exploration_id[-1] in constants.INVALID_TRAILING_CHARS_IN_EXP_ID
+            else exploration_id)
+        if exp_id in feconf.DISABLED_EXPLORATION_IDS:
             raise self.PageNotFoundException
 
         exploration_rights = rights_manager.get_exploration_rights(
-            exploration_id, strict=False)
+            exp_id, strict=False)
 
         if exploration_rights is None:
             raise self.PageNotFoundException
 
         if rights_manager.check_can_access_activity(
                 self.user, exploration_rights):
-            return handler(self, exploration_id, **kwargs)
+            return handler(self, exp_id, **kwargs)
         else:
             raise self.PageNotFoundException
     test_can_play.__wrapped__ = True

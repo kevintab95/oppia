@@ -19,6 +19,7 @@
 from __future__ import absolute_import  # pylint: disable=import-only-modules
 from __future__ import unicode_literals  # pylint: disable=import-only-modules
 
+from constants import constants
 from core.controllers import acl_decorators
 from core.controllers import base
 from core.domain import question_services
@@ -85,6 +86,14 @@ class PlayExplorationDecoratorTests(test_utils.GenericTestBase):
             response = self.get_json(
                 '/mock_play_exploration/%s' % self.published_exp_id)
         self.assertEqual(response['exploration_id'], self.published_exp_id)
+
+    def test_remove_single_offending_trailing_char_in_exp_id(self):
+        for invalid_char in constants.INVALID_TRAILING_CHARS_IN_EXP_ID:
+            with self.swap(self, 'testapp', self.mock_testapp):
+                response = self.get_json(
+                    '/mock_play_exploration/%s%s'
+                    % (self.published_exp_id, invalid_char))
+            self.assertEqual(response['exploration_id'], self.published_exp_id)
 
     def test_guest_cannot_access_private_exploration(self):
         with self.swap(self, 'testapp', self.mock_testapp):

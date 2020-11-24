@@ -211,7 +211,7 @@ class SearchHandler(base.BaseHandler):
     def get(self):
         """Handles GET requests."""
         query_string = utils.unescape_encoded_uri_component(
-            self.request.get('q'))
+            utils.to_ascii(self.request.get('q')))
 
         # Remove all punctuation from the query string, and replace it with
         # spaces. See http://stackoverflow.com/a/266162 and

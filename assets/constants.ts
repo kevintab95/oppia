@@ -5338,6 +5338,9 @@ export = {
     "floor", "if", "log", "or", "pow", "round", "then"
   ],
 
+  // Invalid trailing characters in an exploration id.
+  "INVALID_TRAILING_CHARS_IN_EXP_ID": [",", ".", " ", ":"],
+
   // Greek letters allowed in math interactions.
   "GREEK_LETTER_NAMES_TO_SYMBOLS": {
     "alpha": "α",
