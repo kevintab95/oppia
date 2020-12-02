@@ -46,9 +46,14 @@ export const ServicesConstants = {
 
   RESOLVE_ISSUE_URL: '/resolveissuehandler/<exploration_id>',
 
+  PROMO_BAR_URL: '/promo_bar_handler',
+
   STORE_PLAYTHROUGH_URL:
     '/explorehandler/store_playthrough/<exploration_id>',
-
+  STARTED_EDITOR_TUTORIAL_EVENT_URL :
+    '/createhandler/started_tutorial_event/<exp_id>',
+  STARTED_TRANSLATION_TUTORIAL_EVENT_URL :
+    '/createhandler/started_translation_tutorial_event/<exp_id>',
   // Enables recording playthroughs from learner sessions.
   MIN_PLAYTHROUGH_DURATION_IN_SECS: 45,
   EARLY_QUIT_THRESHOLD_IN_SECS: 300,
