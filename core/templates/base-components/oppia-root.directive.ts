@@ -47,7 +47,10 @@ angular.module('oppia').directive('oppiaRoot', [
               $translate.proposedLanguage() || $translate.use());
             // The next line allows the transcluded content to start executing.
             PlatformFeatureService.platformInitialized.subscribe(
-              _ => $scope.initialized = true
+              _ => {
+                console.log('here');
+                $scope.initialized = true;
+              }
             );
             OppiaAngularRootComponent.platformFeatureService.initializeSync();
           };

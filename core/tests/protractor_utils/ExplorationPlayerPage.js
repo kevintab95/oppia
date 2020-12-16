@@ -22,6 +22,7 @@ var forms = require('./forms.js');
 var waitFor = require('./waitFor.js');
 var interactions = require('../../../extensions/interactions/protractor.js');
 var action = require('./action.js');
+const { browser } = require('protractor');
 
 var ExplorationPlayerPage = function() {
   var conversationInput = element(
@@ -292,12 +293,14 @@ var ExplorationPlayerPage = function() {
   };
 
   this.rateExploration = async function(ratingValue) {
+    await browser.waitForAngularEnabled(false);
     await action.click('Submit Button', ratingStars.get(ratingValue - 1));
     await waitFor.visibilityOfSuccessToast(
       'Success toast for rating takes too long to appear.');
     await action.click('Feedback Close Button', feedbackCloseButton);
     await waitFor.invisibilityOf(
       feedbackCloseButton, 'Close Feedback button does not disappear');
+    await browser.waitForAngularEnabled(true);
   };
 
   // `answerData` is a variable that is passed to the

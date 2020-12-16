@@ -16,6 +16,7 @@
  * @fileoverview Module used by karma for frontend tests.
  */
 
+import 'angular';
 import 'angular-ui-sortable';
 import uiValidate from 'angular-ui-validate';
 import 'third-party-imports/ng-audio.import';

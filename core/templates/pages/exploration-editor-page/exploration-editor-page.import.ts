@@ -19,6 +19,7 @@
 
 // The module needs to be loaded directly after jquery since it defines the
 // main module the elements are attached to.
+
 import 'pages/exploration-editor-page/exploration-editor-page.module.ts';
 require('App.ts');
 require('base-components/oppia-root.directive.ts');

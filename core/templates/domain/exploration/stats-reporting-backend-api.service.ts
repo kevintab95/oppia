@@ -246,6 +246,10 @@ export class StatsReportingBackendApiService {
       version: version
     }).toPromise();
   }
+
+  asyncFn() {
+    return new Promise((resolve, reject) => resolve(0));
+  }
 }
 
 angular.module('oppia').factory(
