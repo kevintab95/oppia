@@ -37,6 +37,7 @@ ONE_OFF_JOB_MANAGERS = [
     collection_jobs_one_off.CollectionMigrationOneOffJob,
     exp_jobs_one_off.ExplorationMigrationJobManager,
     exp_jobs_one_off.ExpSnapshotsMigrationJob,
+    exp_jobs_one_off.ExpContentEncodingDebugAuditJob,
     interaction_jobs_one_off.LogicProofInteractionOneOffJob,
     question_jobs_one_off.FixQuestionImagesStorageOneOffJob,
     question_jobs_one_off.QuestionMigrationOneOffJob,

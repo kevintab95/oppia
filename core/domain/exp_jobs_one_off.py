@@ -19,6 +19,7 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
+import difflib
 import logging
 
 from core import jobs
@@ -91,6 +92,62 @@ class ExplorationMigrationJobManager(jobs.BaseMapReduceOneOffJobManager):
     @staticmethod
     def reduce(key, values):
         yield (key, len(values))
+
+
+class ExpContentEncodingDebugAuditJob(jobs.BaseMapReduceOneOffJobManager):
+    """Audit HTML strings affected by v46 schema migration.
+    """
+
+    @classmethod
+    def entity_classes_to_map_over(cls):
+        return [exp_models.ExplorationModel]
+
+    @classmethod
+    def enqueue(cls, job_id, additional_job_params=None):
+        super(ExpContentEncodingDebugAuditJob, cls).enqueue(
+            job_id, shard_count=64)
+
+    @staticmethod
+    def map(item):
+        if item.deleted:
+            return
+
+        # Do not upgrade explorations that fail non-strict validation.
+        snapshots = exp_services.get_exploration_snapshots_metadata(item.id)
+        commit_msg = 'Update exploration states from schema version 46 to 47.'
+        migrated_version = None
+        for snapshot in snapshots:
+            if snapshot['commit_message'] == commit_msg:
+                migrated_version = snapshot['version_number']
+
+        if migrated_version:
+            exp_model_with_bad_state = exp_models.ExplorationModel.get(
+                item.id, version=migrated_version)
+            exp_model_with_good_state = exp_models.ExplorationModel.get(
+                item.id, version=migrated_version - 1)
+            bad_html_strings = exp_fetchers.get_exploration_from_model(
+                exp_model_with_bad_state,
+                run_conversion=False
+            ).get_all_html_content_strings()
+            good_html_strings = exp_fetchers.get_exploration_from_model(
+                exp_model_with_good_state,
+                run_conversion=False
+            ).get_all_html_content_strings()
+            if len(good_html_strings) == len(bad_html_strings):
+                for i in python_utils.RANGE(1,len(good_html_strings)):
+                    good_html = good_html_strings[i]
+                    bad_html = bad_html_strings[i]
+                    sm = difflib.SequenceMatcher(None, good_html, bad_html)
+                    for tag, i1, i2, j1, j2 in sm.get_opcodes():
+                        if tag == 'replace':
+                            yield (
+                                bad_html[j1:j2].encode(encoding='utf-8'),
+                                good_html[i1:i2].encode(encoding='utf-8'),
+                            )
+
+    @staticmethod
+    def reduce(key, values):
+        yield (key, list(set(values)))
 
 
 class ExpSnapshotsMigrationJob(jobs.BaseMapReduceOneOffJobManager):
