@@ -140,7 +140,7 @@ angular.module('oppia').directive('stateContentEditor', [
           ctrl.$onDestroy = function() {
             ctrl.directiveSubscriptions.unsubscribe();
           };
-        }
+      }
       ]
     };
   }
