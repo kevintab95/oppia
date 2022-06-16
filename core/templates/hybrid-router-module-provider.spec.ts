@@ -107,26 +107,11 @@ fdescribe('Smart router link directive', () => {
     location = TestBed.inject(Location);
   }));
 
-  fit('should navigate', fakeAsync(() => {
-    const navigateSpy = spyOn(router, 'navigate');
-    const fixture = mockCompAFixture.debugElement.nativeElement.querySelector(By.directive(SmartRouterLink));
-    fixture.onClick();
-    // fixture.triggerEventHandler('click', {});
-    tick();
-    expect(navigateSpy).toHaveBeenCalledWith(['/contact']);
-  }));
-
-  it('should navigate by refreshing from non-router page', fakeAsync(() => {
-    // spyOn(smartRouterLink, 'onClick').and.callThrough();
-    const navigateSpy = spyOn(router, 'navigate');    
+  fit('should navigate by refreshing from non-router page', fakeAsync(() => {
     mockCompALink.click();
     mockCompAFixture.detectChanges();
     tick();
-    // console.log(mockWindowRef.nativeWindow.location.href);
-    // expect(smartRouterLink.onClick).toHaveBeenCalled();
-    // expect(mockWindowRef.nativeWindow.location.href).toBe('/contact');
-    // expect(location.path()).toEqual('/contact');
-    expect(navigateSpy).toHaveBeenCalledWith(['/contact']);
+    expect(location.path()).toEqual('/contact');
   }));
 
   it(

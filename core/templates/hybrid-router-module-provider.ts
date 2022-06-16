@@ -59,6 +59,7 @@ export class SmartRouterLink extends RouterLinkWithHref {
       altKey: boolean,
       metaKey: boolean
   ): boolean {
+    console.error('clicked!!!!!!!!!!!!!');
     let bodyContent = window.document.querySelector('body');
     let currentPageIsInRouter = (
       // eslint-disable-next-line oppia/no-inner-html
