@@ -18,8 +18,10 @@
 
 import { Component } from '@angular/core';
 import { ComponentFixture, fakeAsync, TestBed, tick, waitForAsync } from '@angular/core/testing';
-import { RouterModule } from '@angular/router';
-import { APP_BASE_HREF } from '@angular/common';
+import { Router, RouterModule } from '@angular/router';
+import { APP_BASE_HREF, Location } from '@angular/common';
+import { RouterTestingModule } from '@angular/router/testing';
+import { By } from '@angular/platform-browser';
 
 import { SmartRouterLink, SmartRouterModule } from 'hybrid-router-module-provider';
 import { WindowRef } from 'services/contextual/window-ref.service';
@@ -50,7 +52,7 @@ class MockWindowRef {
   };
 }
 
-describe('Smart router link directive', () => {
+fdescribe('Smart router link directive', () => {
   let componentA: MockCompA;
   let componentB: MockCompB;
   let componentC: MockCompC;
@@ -63,34 +65,35 @@ describe('Smart router link directive', () => {
   let mockWindowRef: MockWindowRef;
 
   let smartRouterLink: SmartRouterLink;
+  let location: Location;
+  let router: Router;
 
   beforeEach(waitForAsync(() => {
     mockWindowRef = new MockWindowRef();
     TestBed.configureTestingModule({
       imports: [
-        RouterModule.forRoot([]),
-        SmartRouterModule
+        RouterTestingModule.withRoutes([
+          // { path: 'contact', component: MockCompA }
+        ]),
       ],
       declarations: [
         MockCompA,
         MockCompB,
         MockCompC,
+        SmartRouterLink,
       ],
       providers: [
         {
           provide: WindowRef,
-          useClass: mockWindowRef
-        },
-        {
-          provide: APP_BASE_HREF,
-          useValue: '/'
+          useValue: mockWindowRef
         }
       ]
     }).compileComponents();
   }));
 
   beforeEach(waitForAsync(() => {
-    smartRouterLink = TestBed.inject(SmartRouterLink);
+    // smartRouterLink = TestBed.inject(SmartRouterLink);
+    router = TestBed.inject(Router);
 
     mockCompAFixture = TestBed.createComponent(MockCompA);
     mockCompBFixture = TestBed.createComponent(MockCompB);
@@ -101,15 +104,29 @@ describe('Smart router link directive', () => {
       mockCompBFixture.debugElement.nativeElement.querySelector('a'));
     mockCompCLink = (
       mockCompCFixture.debugElement.nativeElement.querySelector('a'));
+    location = TestBed.inject(Location);
+  }));
+
+  fit('should navigate', fakeAsync(() => {
+    const navigateSpy = spyOn(router, 'navigate');
+    const fixture = mockCompAFixture.debugElement.nativeElement.querySelector(By.directive(SmartRouterLink));
+    fixture.onClick();
+    // fixture.triggerEventHandler('click', {});
+    tick();
+    expect(navigateSpy).toHaveBeenCalledWith(['/contact']);
   }));
 
   it('should navigate by refreshing from non-router page', fakeAsync(() => {
-    spyOn(smartRouterLink, 'onClick').and.callThrough();
+    // spyOn(smartRouterLink, 'onClick').and.callThrough();
+    const navigateSpy = spyOn(router, 'navigate');    
     mockCompALink.click();
+    mockCompAFixture.detectChanges();
     tick();
-    console.log(mockWindowRef.nativeWindow.location.href);
-    expect(smartRouterLink.onClick).toHaveBeenCalled();
-    expect(mockWindowRef.nativeWindow.location.href).toBe('/contact');
+    // console.log(mockWindowRef.nativeWindow.location.href);
+    // expect(smartRouterLink.onClick).toHaveBeenCalled();
+    // expect(mockWindowRef.nativeWindow.location.href).toBe('/contact');
+    // expect(location.path()).toEqual('/contact');
+    expect(navigateSpy).toHaveBeenCalledWith(['/contact']);
   }));
 
   it(
