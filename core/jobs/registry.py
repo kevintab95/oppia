@@ -60,6 +60,7 @@ from core.jobs.batch_jobs import math_interactions_audit_jobs        # pylint: d
 from core.jobs.batch_jobs import mailchimp_population_jobs           # pylint: disable=unused-import  # isort: skip
 from core.jobs.batch_jobs import tabs_collapsables_validation_jobs   # pylint: disable=unused-import  # isort: skip
 from core.jobs.batch_jobs import exp_validation_jobs                 # pylint: disable=unused-import  # isort: skip
+from core.jobs.batch_jobs import state_interaction_validation_jobs   # pylint: disable=unused-import  # isort: skip
 
 
 def get_all_jobs() -> List[Type[base_jobs.JobBase]]:
