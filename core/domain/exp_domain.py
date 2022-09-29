@@ -3267,7 +3267,7 @@ class Exploration(translation_domain.BaseTranslatableObject):
                 to ItemSelectionInput interaction or not.
         """
         empty_choices: List[state_domain.SubtitledHtmlDict] = []
-        seen_choices: List[state_domain.SubtitledHtmlDict] = []
+        seen_choices: List[str] = []
         choices_to_remove: List[state_domain.SubtitledHtmlDict] = []
         invalid_choices_index = []
         invalid_choices_content_ids = []
@@ -3307,6 +3307,7 @@ class Exploration(translation_domain.BaseTranslatableObject):
                         invalid_rules.append(rule_spec)
                     if is_item_selection_interaction:
                         rule_values = rule_spec['inputs']['x']
+                        assert isinstance(rule_values, str)
                         if any(
                             item in rule_values for item in
                             invalid_choices_content_ids
@@ -3429,6 +3430,7 @@ class Exploration(translation_domain.BaseTranslatableObject):
             value: float. The value of the rule spec.
         """
         rule_value_f = rule_spec['inputs']['f']
+        assert isinstance(rule_value_f, dict)
         value: float = (
             rule_value_f['wholeNumber'] +
             float(rule_value_f['numerator']) / rule_value_f['denominator']
@@ -3636,7 +3638,9 @@ class Exploration(translation_domain.BaseTranslatableObject):
                 }
                 if rule_spec['rule_type'] == 'IsLessThanOrEqualTo':
                     try:
-                        rule_value = float(rule_spec['inputs']['x'])
+                        value = rule_spec['inputs']['x']
+                        assert isinstance(value, str)
+                        rule_value = float(value)
                         cls._set_lower_and_upper_bounds(
                             range_var, lower_infinity,
                             rule_value, False, True
@@ -3646,7 +3650,9 @@ class Exploration(translation_domain.BaseTranslatableObject):
 
                 elif rule_spec['rule_type'] == 'IsGreaterThanOrEqualTo':
                     try:
-                        rule_value = float(rule_spec['inputs']['x'])
+                        value = rule_spec['inputs']['x']
+                        assert isinstance(value, str)
+                        rule_value = float(value)
                         cls._set_lower_and_upper_bounds(
                             range_var, rule_value,
                             upper_infinity, True, False
@@ -3656,7 +3662,9 @@ class Exploration(translation_domain.BaseTranslatableObject):
 
                 elif rule_spec['rule_type'] == 'Equals':
                     try:
-                        rule_value = float(rule_spec['inputs']['x'])
+                        value = rule_spec['inputs']['x']
+                        assert isinstance(value, str)
+                        rule_value = float(value)
                         cls._set_lower_and_upper_bounds(
                             range_var, rule_value,
                             rule_value, True, True
@@ -3666,7 +3674,9 @@ class Exploration(translation_domain.BaseTranslatableObject):
 
                 elif rule_spec['rule_type'] == 'IsLessThan':
                     try:
-                        rule_value = float(rule_spec['inputs']['x'])
+                        value = rule_spec['inputs']['x']
+                        assert isinstance(value, str)
+                        rule_value = float(value)
                         cls._set_lower_and_upper_bounds(
                             range_var, lower_infinity,
                             rule_value, False, False
@@ -3676,16 +3686,17 @@ class Exploration(translation_domain.BaseTranslatableObject):
 
                 elif rule_spec['rule_type'] == 'IsWithinTolerance':
                     try:
-                        rule_value_x = rule_spec['inputs']['x']
-                        rule_value_tol = rule_spec['inputs']['tol']
+                        value_x = rule_spec['inputs']['x']
+                        value_tol = rule_spec['inputs']['tol']
+                        assert isinstance(value_tol, str)
+                        float_value_tol = float(value_tol)
                         # The `tolerance` value needs to be a positive value.
-                        if rule_value_tol <= 0:
-                            rule_spec['inputs']['tol'] = abs(rule_value_tol)
-                        rule_value_x = float(rule_value_x)
-                        rule_value_tol = float(rule_value_tol)
+                        if float_value_tol <= 0.0:
+                            value_tol = abs(value_tol)
+                        rule_value_x = float(value_x)
                         cls._set_lower_and_upper_bounds(
-                            range_var, rule_value_x - rule_value_tol,
-                            rule_value_x + rule_value_tol, True, True
+                            range_var, rule_value_x - float_value_tol,
+                            rule_value_x + float_value_tol, True, True
                         )
                     except Exception:
                         pass
@@ -3702,14 +3713,13 @@ class Exploration(translation_domain.BaseTranslatableObject):
 
                 elif rule_spec['rule_type'] == 'IsInclusivelyBetween':
                     try:
-                        rule_value_a = rule_spec['inputs']['a']
-                        rule_value_b = rule_spec['inputs']['b']
+                        value_a = rule_spec['inputs']['a']
+                        value_b = rule_spec['inputs']['b']
                         # For x in [a, b], a must not be greater than b.
-                        if rule_value_a > rule_value_b:
-                            rule_value_a, rule_value_b = (
-                                rule_value_b, rule_value_a)
-                        rule_value_a = float(rule_value_a)
-                        rule_value_b = float(rule_value_b)
+                        if value_a > value_b:
+                            value_a, value_b = value_b, value_a
+                        rule_value_a = float(value_a)
+                        rule_value_b = float(value_b)
                         cls._set_lower_and_upper_bounds(
                             range_var, rule_value_a,
                             rule_value_b, True, True
@@ -3830,7 +3840,7 @@ class Exploration(translation_domain.BaseTranslatableObject):
                         'ans_group_index']]['rule_specs'][
                             range_ele['rule_spec_index']]
                     if cls._should_check_range_criteria(
-                        earlier_rule, rule_spec and
+                        earlier_rule, rule_spec) and (
                         cls._is_enclosed_by(range_var, range_ele)
                     ):
                         invalid_rules.append(rule_spec)
@@ -3958,7 +3968,7 @@ class Exploration(translation_domain.BaseTranslatableObject):
             state_dict['interaction']['customization_args']
             ['maxAllowableSelectionCount']['value']
         )
-        choices: List[state_domain.SubtitledHtmlDict] = (
+        choices = (
             state_dict['interaction']['customization_args'][
                 'choices']['value']
         )
