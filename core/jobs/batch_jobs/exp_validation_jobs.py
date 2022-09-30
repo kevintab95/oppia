@@ -43,7 +43,7 @@ if MYPY:  # pragma: no cover
 datastore_services = models.Registry.import_datastore_services()
 
 (exp_models, opportunity_models) = models.Registry.import_models(
-    [models.NAMES.exploration, models.NAMES.opportunity])
+    [models.Names.EXPLORATION, models.Names.OPPORTUNITY])
 
 
 class ExpStateValidationJob(base_jobs.JobBase):
@@ -1314,7 +1314,7 @@ class ExpStateValidationJob(base_jobs.JobBase):
                 self.filter_curated_explorations)
             | 'Get exploration from the model' >> beam.Map(
                 self.get_exploration_from_models)
-            | 'Filter valid explorations' >> beam.Filter(
+            | 'Filter valid curated explorations' >> beam.Filter(
                 lambda exp: exp is not None)
             | 'Combine curated exp id and states' >> beam.Map(
                 lambda exp: (exp.id, exp.states, exp.created_on))
