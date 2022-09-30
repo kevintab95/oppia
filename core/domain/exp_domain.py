@@ -3307,7 +3307,6 @@ class Exploration(translation_domain.BaseTranslatableObject):
                         invalid_rules.append(rule_spec)
                     if is_item_selection_interaction:
                         rule_values = rule_spec['inputs']['x']
-                        assert isinstance(rule_values, str)
                         if any(
                             item in rule_values for item in
                             invalid_choices_content_ids
@@ -3566,7 +3565,7 @@ class Exploration(translation_domain.BaseTranslatableObject):
             if language_code in lang_code_to_unicode_str_dict:
                 state_dict['interaction']['customization_args'][
                     'buttonText']['value']['unicode_str'] = (
-                        lang_code_to_unicode_str_dict['language_code'])
+                        lang_code_to_unicode_str_dict[language_code])
             else:
                 state_dict['interaction']['customization_args'][
                     'buttonText']['value']['unicode_str'] = 'Continue'
