@@ -3406,7 +3406,7 @@ class Exploration(translation_domain.BaseTranslatableObject):
             bool. Returns True if the rules passes the range criteria check.
         """
         if earlier_rule['rule_type'] in (
-            'HasDenominatorEqualTo', 'IsEquivalentTo', 'IsLessThan'
+            'HasDenominatorEqualTo', 'IsEquivalentTo', 'IsLessThan',
             'IsEquivalentToAndInSimplestForm', 'IsGreaterThan'
         ):
             return True
@@ -3434,7 +3434,6 @@ class Exploration(translation_domain.BaseTranslatableObject):
             rule_value_f['wholeNumber'] +
             float(rule_value_f['numerator']) / rule_value_f['denominator']
         )
-
         return value
 
     @classmethod
@@ -3698,7 +3697,7 @@ class Exploration(translation_domain.BaseTranslatableObject):
                             rule_value_x + float_value_tol, True, True
                         )
                     except Exception:
-                        pass
+                        invalid_rules.append(rule_spec)
 
                 elif rule_spec['rule_type'] == 'IsGreaterThan':
                     try:
@@ -3724,7 +3723,7 @@ class Exploration(translation_domain.BaseTranslatableObject):
                             rule_value_b, True, True
                         )
                     except Exception:
-                        pass
+                        invalid_rules.append(rule_spec)
 
                 for range_ele in ranges:
                     if cls._is_enclosed_by(range_var, range_ele):
@@ -3838,8 +3837,8 @@ class Exploration(translation_domain.BaseTranslatableObject):
                     earlier_rule = answer_groups[range_ele[
                         'ans_group_index']]['rule_specs'][
                             range_ele['rule_spec_index']]
-                    if cls._should_check_range_criteria(
-                        earlier_rule, rule_spec) and (
+                    if (cls._should_check_range_criteria(
+                        earlier_rule, rule_spec) and
                         cls._is_enclosed_by(range_var, range_ele)
                     ):
                         invalid_rules.append(rule_spec)
@@ -3897,6 +3896,14 @@ class Exploration(translation_domain.BaseTranslatableObject):
         empty_ans_groups = []
         answer_groups = state_dict['interaction']['answer_groups']
 
+        # Answer choices should be non-empty and unique.
+        choices: List[state_domain.SubtitledHtmlDict] = (
+            state_dict['interaction']['customization_args'][
+                'choices']['value']
+        )
+        cls._choices_should_be_unique_and_non_empty(
+            choices, answer_groups)
+
         cls._remove_duplicate_rules_inside_answer_groups(
             answer_groups, state_name)
         # No answer choice should appear in more than one rule.
@@ -3923,14 +3930,6 @@ class Exploration(translation_domain.BaseTranslatableObject):
 
         for empty_ans_group in empty_ans_groups:
             answer_groups.remove(empty_ans_group)
-
-        # Answer choices should be non-empty and unique.
-        choices: List[state_domain.SubtitledHtmlDict] = (
-            state_dict['interaction']['customization_args'][
-                'choices']['value']
-        )
-        cls._choices_should_be_unique_and_non_empty(
-            choices, answer_groups)
 
         state_dict['interaction']['customization_args']['choices'][
             'value'] = choices
@@ -3977,6 +3976,20 @@ class Exploration(translation_domain.BaseTranslatableObject):
         cls._remove_duplicate_rules_inside_answer_groups(
             answer_groups, state_name)
 
+        # Minimum number of selections should be no greater than maximum
+        # number of selections.
+        if min_value > max_value:
+            min_value, max_value = max_value, min_value
+
+        # There should be enough choices to have minimum number
+        # of selections.
+        if len(choices) < min_value:
+            min_value = 1
+
+        # All choices should be unique and empty.
+        cls._choices_should_be_unique_and_non_empty(
+            choices, answer_groups, True)
+
         empty_ans_groups = []
         for answer_group in answer_groups:
             invalid_rules = []
@@ -4007,20 +4020,6 @@ class Exploration(translation_domain.BaseTranslatableObject):
 
         for empty_ans_group in empty_ans_groups:
             answer_groups.remove(empty_ans_group)
-
-        # Minimum number of selections should be no greater than maximum
-        # number of selections.
-        if min_value > max_value:
-            min_value, max_value = max_value, min_value
-
-        # There should be enough choices to have minimum number
-        # of selections.
-        if len(choices) < min_value:
-            min_value = 1
-
-        # All choices should be unique and empty.
-        cls._choices_should_be_unique_and_non_empty(
-            choices, answer_groups, True)
 
         state_dict['interaction']['customization_args'][
             'minAllowableSelectionCount']['value'] = min_value
