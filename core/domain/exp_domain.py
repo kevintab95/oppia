@@ -3088,7 +3088,7 @@ class Exploration(translation_domain.BaseTranslatableObject):
                 for param_name, value in rule_spec['inputs'].items():
                     interaction_id = interaction['id']
                     param_type = (
-                        interaction_registry.Registry.get_interaction_by_id( # type: ignore[no-untyped-call]
+                        interaction_registry.Registry.get_interaction_by_id(
                             interaction_id
                         ).get_rule_param_type(
                             rule_spec['rule_type'], param_name
@@ -3294,9 +3294,6 @@ class Exploration(translation_domain.BaseTranslatableObject):
                 invalid_choices_index.append(choices.index(choice))
                 invalid_choices_content_ids.append(choice['content_id'])
 
-        for choice_to_remove in choices_to_remove:
-            choices.remove(choice_to_remove)
-
         # Remove rules whose choice has been deleted.
         empty_ans_groups = []
         for answer_group in answer_groups:
@@ -3323,6 +3320,9 @@ class Exploration(translation_domain.BaseTranslatableObject):
 
         for empty_ans_group in empty_ans_groups:
             answer_groups.remove(empty_ans_group)
+
+        for choice_to_remove in choices_to_remove:
+            choices.remove(choice_to_remove)
 
     @classmethod
     def _set_lower_and_upper_bounds(
