@@ -1262,7 +1262,7 @@ class SerializableExplorationDict(ExplorationDict):
 
 class RangeVariableDict(TypedDict):
     """Dictionary representing the range variable for the NumericInput
-    interaction
+    interaction.
     """
 
     ans_group_index: int
@@ -1275,7 +1275,7 @@ class RangeVariableDict(TypedDict):
 
 class MatchedDenominatorDict(TypedDict):
     """Dictionary representing the matched denominator variable for the
-    FractionInput interaction
+    FractionInput interaction.
     """
 
     ans_group_index: int
@@ -3067,11 +3067,10 @@ class Exploration(translation_domain.BaseTranslatableObject):
 
     @classmethod
     def _remove_unwanted_content_ids_from_translations_and_voiceovers(
-        cls,
-        state_dict: state_domain.StateDict
+        cls, state_dict: state_domain.StateDict
     ) -> None:
         """Helper function to remove the content IDs from the translations
-        and voiceovers which are deleted from the state
+        and voiceovers which are deleted from the state.
 
         Args:
             state_dict: state_domain.StateDict. The state dictionary.
@@ -3249,6 +3248,7 @@ class Exploration(translation_domain.BaseTranslatableObject):
         cls,
         choices: List[state_domain.SubtitledHtmlDict],
         answer_groups: List[state_domain.AnswerGroupDict],
+        *,
         is_item_selection_interaction: bool = False
     ) -> None:
         """Handles choices present in the ItemSelectionInput or
@@ -3330,6 +3330,7 @@ class Exploration(translation_domain.BaseTranslatableObject):
         range_var: RangeVariableDict,
         lower_bound: Optional[float],
         upper_bound: Optional[float],
+        *,
         lb_inclusive: bool,
         ub_inclusive: bool
     ) -> None:
@@ -3503,6 +3504,7 @@ class Exploration(translation_domain.BaseTranslatableObject):
                         answer_group['outcome']['dest'] == state_name
                     ):
                         answer_group['rule_specs'].remove(rule_to_remove)
+                        break
 
                 if (
                     len(answer_group['rule_specs']) == 0 and
@@ -3518,6 +3520,7 @@ class Exploration(translation_domain.BaseTranslatableObject):
                         answer_group['outcome']['dest'] != state_name
                     ):
                         answer_group['rule_specs'].remove(rule_to_remove)
+                        break
 
                 if (
                     len(answer_group['rule_specs']) == 0 and
@@ -3530,8 +3533,7 @@ class Exploration(translation_domain.BaseTranslatableObject):
 
     @classmethod
     def _fix_continue_interaction(
-        cls, state_dict: state_domain.StateDict,
-        language_code: str
+        cls, state_dict: state_domain.StateDict, language_code: str
     ) -> None:
         """Fixes Continue interaction where the length of the text value
         is more than 20. We simply replace them with the word `Continue`
@@ -3541,7 +3543,6 @@ class Exploration(translation_domain.BaseTranslatableObject):
             state_dict: state_domain.StateDict. The state dictionary.
             language_code: str. The language code of the exploration.
         """
-        # Text should have a max-length of 20.
         text_value = state_dict['interaction'][
             'customization_args']['buttonText']['value']['unicode_str']
         lang_code_to_unicode_str_dict = {
@@ -3581,17 +3582,12 @@ class Exploration(translation_domain.BaseTranslatableObject):
         # Should be at most 3 recommended explorations.
         recc_exp_ids = state_dict['interaction'][
             'customization_args']['recommendedExplorationIds']['value']
-        if len(recc_exp_ids) > 3:
-            recc_exp_ids = recc_exp_ids[:3]
-
         state_dict['interaction']['customization_args'][
-            'recommendedExplorationIds']['value'] = recc_exp_ids
+            'recommendedExplorationIds']['value'] = recc_exp_ids[:3]
 
     @classmethod
     def _fix_numeric_input_interaction(
-        cls,
-        state_dict: state_domain.StateDict,
-        state_name: str
+        cls, state_dict: state_domain.StateDict, state_name: str
     ) -> None:
         """Fixes NumericInput interaction for the following cases:
         - The rules should not be duplicate else the one with not pointing to
@@ -3640,8 +3636,11 @@ class Exploration(translation_domain.BaseTranslatableObject):
                         assert isinstance(value, str)
                         rule_value = float(value)
                         cls._set_lower_and_upper_bounds(
-                            range_var, lower_infinity,
-                            rule_value, False, True
+                            range_var,
+                            lower_infinity,
+                            rule_value,
+                            lb_inclusive=False,
+                            ub_inclusive=True
                         )
                     except Exception:
                         invalid_rules.append(rule_spec)
@@ -3652,8 +3651,11 @@ class Exploration(translation_domain.BaseTranslatableObject):
                         assert isinstance(value, str)
                         rule_value = float(value)
                         cls._set_lower_and_upper_bounds(
-                            range_var, rule_value,
-                            upper_infinity, True, False
+                            range_var,
+                            rule_value,
+                            upper_infinity,
+                            lb_inclusive=True,
+                            ub_inclusive=False
                         )
                     except Exception:
                         invalid_rules.append(rule_spec)
@@ -3664,8 +3666,11 @@ class Exploration(translation_domain.BaseTranslatableObject):
                         assert isinstance(value, str)
                         rule_value = float(value)
                         cls._set_lower_and_upper_bounds(
-                            range_var, rule_value,
-                            rule_value, True, True
+                            range_var,
+                            rule_value,
+                            rule_value,
+                            lb_inclusive=True,
+                            ub_inclusive=True
                         )
                     except Exception:
                         invalid_rules.append(rule_spec)
@@ -3676,8 +3681,11 @@ class Exploration(translation_domain.BaseTranslatableObject):
                         assert isinstance(value, str)
                         rule_value = float(value)
                         cls._set_lower_and_upper_bounds(
-                            range_var, lower_infinity,
-                            rule_value, False, False
+                            range_var,
+                            lower_infinity,
+                            rule_value,
+                            lb_inclusive=False,
+                            ub_inclusive=False
                         )
                     except Exception:
                         invalid_rules.append(rule_spec)
@@ -3693,8 +3701,11 @@ class Exploration(translation_domain.BaseTranslatableObject):
                             value_tol = abs(value_tol)
                         rule_value_x = float(value_x)
                         cls._set_lower_and_upper_bounds(
-                            range_var, rule_value_x - float_value_tol,
-                            rule_value_x + float_value_tol, True, True
+                            range_var,
+                            rule_value_x - rule_value_tol,
+                            rule_value_x + rule_value_tol,
+                            lb_inclusive=True,
+                            ub_inclusive=True
                         )
                     except Exception:
                         invalid_rules.append(rule_spec)
@@ -3703,8 +3714,11 @@ class Exploration(translation_domain.BaseTranslatableObject):
                     try:
                         rule_value = float(rule_spec['inputs']['x'])
                         cls._set_lower_and_upper_bounds(
-                            range_var, rule_value,
-                            upper_infinity, False, False
+                            range_var,
+                            rule_value,
+                            upper_infinity,
+                            lb_inclusive=False,
+                            ub_inclusive=False
                         )
                     except Exception:
                         invalid_rules.append(rule_spec)
@@ -3719,8 +3733,11 @@ class Exploration(translation_domain.BaseTranslatableObject):
                         rule_value_a = float(value_a)
                         rule_value_b = float(value_b)
                         cls._set_lower_and_upper_bounds(
-                            range_var, rule_value_a,
-                            rule_value_b, True, True
+                            range_var,
+                            rule_value_a,
+                            rule_value_b,
+                            lb_inclusive=True,
+                            ub_inclusive=True
                         )
                     except Exception:
                         invalid_rules.append(rule_spec)
@@ -3751,17 +3768,14 @@ class Exploration(translation_domain.BaseTranslatableObject):
 
     @classmethod
     def _fix_fraction_input_interaction(
-        cls,
-        state_dict: state_domain.StateDict,
-        state_name: str
+        cls, state_dict: state_domain.StateDict, state_name: str
     ) -> None:
-        """Fixes FractionInput interaction where rule should not match previous
-        rules solution means it should not be in the range of previous rules
-        solution otherwise the later answer group will be redundant and will
-        never be matched. Simply the invalid rule will be removed and if only
-        one rule is present then the complete answer group is removed.
-        The rules should not be duplicate else the one with not pointing to
+        """Fixes FractionInput interaction for the following cases:
+        - The rules should not be duplicate else the one with not pointing to
         different state will be deleted
+        - The rule should not match previous rules solution means it should
+        not be in the range of previous rules solution. Invalid rules will
+        be removed.
 
         Args:
             state_dict: state_domain.StateDict. The state dictionary that needs
@@ -3804,8 +3818,11 @@ class Exploration(translation_domain.BaseTranslatableObject):
                     rule_value_f: float = (
                         cls._get_rule_value_of_fraction_interaction(rule_spec))
                     cls._set_lower_and_upper_bounds(
-                        range_var, rule_value_f,
-                        rule_value_f, True, True
+                        range_var,
+                        rule_value_f,
+                        rule_value_f,
+                        lb_inclusive=True,
+                        ub_inclusive=True
                     )
 
                 elif rule_spec['rule_type'] == 'IsGreaterThan':
@@ -3813,8 +3830,11 @@ class Exploration(translation_domain.BaseTranslatableObject):
                         cls._get_rule_value_of_fraction_interaction(rule_spec))
 
                     cls._set_lower_and_upper_bounds(
-                        range_var, rule_value_f,
-                        upper_infinity, False, False
+                        range_var,
+                        rule_value_f,
+                        upper_infinity,
+                        lb_inclusive=False,
+                        ub_inclusive=False
                     )
 
                 elif rule_spec['rule_type'] == 'IsLessThan':
@@ -3822,8 +3842,11 @@ class Exploration(translation_domain.BaseTranslatableObject):
                         cls._get_rule_value_of_fraction_interaction(rule_spec))
 
                     cls._set_lower_and_upper_bounds(
-                        range_var, lower_infinity,
-                        rule_value_f, False, False
+                        range_var,
+                        lower_infinity,
+                        rule_value_f,
+                        lb_inclusive=False,
+                        ub_inclusive=False
                     )
 
                 elif rule_spec['rule_type'] == 'HasDenominatorEqualTo':
@@ -3875,9 +3898,7 @@ class Exploration(translation_domain.BaseTranslatableObject):
 
     @classmethod
     def _fix_multiple_choice_input_interaction(
-        cls,
-        state_dict: state_domain.StateDict,
-        state_name: str
+        cls, state_dict: state_domain.StateDict, state_name: str
     ) -> None:
         """Fixes MultipleChoiceInput interaction for the following cases:
         - The rules should not be duplicate else the one with not pointing to
@@ -3896,7 +3917,6 @@ class Exploration(translation_domain.BaseTranslatableObject):
         empty_ans_groups = []
         answer_groups = state_dict['interaction']['answer_groups']
 
-        # Answer choices should be non-empty and unique.
         choices: List[state_domain.SubtitledHtmlDict] = (
             state_dict['interaction']['customization_args'][
                 'choices']['value']
@@ -3937,9 +3957,7 @@ class Exploration(translation_domain.BaseTranslatableObject):
 
     @classmethod
     def _fix_item_selection_input_interaction(
-        cls,
-        state_dict: state_domain.StateDict,
-        state_name: str
+        cls, state_dict: state_domain.StateDict, state_name: str
     ) -> None:
         """Fixes ItemSelectionInput interaction for the following cases:
         - The rules should not be duplicate else the one with not pointing to
@@ -3986,9 +4004,9 @@ class Exploration(translation_domain.BaseTranslatableObject):
         if len(choices) < min_value:
             min_value = 1
 
-        # All choices should be unique and empty.
+        # All choices should be unique and non-empty.
         cls._choices_should_be_unique_and_non_empty(
-            choices, answer_groups, True)
+            choices, answer_groups, is_item_selection_interaction=True)
 
         empty_ans_groups = []
         for answer_group in answer_groups:
@@ -4004,10 +4022,8 @@ class Exploration(translation_domain.BaseTranslatableObject):
                         if answer_group['outcome']['dest'] == state_name:
                             invalid_rules.append(rule_spec)
                         else:
-                            if len(rule_value) < min_value:
-                                min_value = len(rule_value)
-                            elif len(rule_value) > max_value:
-                                max_value = len(rule_value)
+                            min_value = min(min_value, len(rule_value))
+                            max_value = max(max_value, len(rule_value))
 
             for invalid_rule in invalid_rules:
                 answer_group['rule_specs'].remove(invalid_rule)
@@ -4031,9 +4047,7 @@ class Exploration(translation_domain.BaseTranslatableObject):
 
     @classmethod
     def _fix_drag_and_drop_input_interaction(
-        cls,
-        state_dict: state_domain.StateDict,
-        state_name: str
+        cls, state_dict: state_domain.StateDict, state_name: str
     ) -> None:
         """Fixes the DragAndDropInput interaction with following checks:
         - The rules should not be duplicate else the one with not pointing to
@@ -4075,10 +4089,9 @@ class Exploration(translation_domain.BaseTranslatableObject):
             for rule_spec in answer_group['rule_specs']:
                 # Multiple items cannot be in the same place iff the
                 # setting is turned off.
-                if not multi_item_value:
-                    for ele in rule_spec['inputs']['x']:
-                        if len(ele) > 1:
-                            invalid_rules.append(rule_spec)
+                for ele in rule_spec['inputs']['x']:
+                    if not multi_item_value and len(ele) > 1:
+                        invalid_rules.append(rule_spec)
 
                 if (
                     rule_spec['rule_type'] ==
@@ -4097,7 +4110,7 @@ class Exploration(translation_domain.BaseTranslatableObject):
                 # In `HasElementXBeforeElementY` rule, `X` value
                 # should not be equal to `Y` value.
                 elif (
-                    rule_spec['rule_type'] =='HasElementXBeforeElementY' and
+                    rule_spec['rule_type'] == 'HasElementXBeforeElementY' and
                     rule_spec['inputs']['x'] == rule_spec['inputs']['y']
                 ):
                     invalid_rules.append(rule_spec)
@@ -4169,9 +4182,7 @@ class Exploration(translation_domain.BaseTranslatableObject):
 
     @classmethod
     def _fix_text_input_interaction(
-        cls,
-        state_dict: state_domain.StateDict,
-        state_name: str
+        cls, state_dict: state_domain.StateDict, state_name: str
     ) -> None:
         """Fixes the TextInput interaction with following checks:
         - The rules should not be duplicate else the one with not pointing to
@@ -4340,6 +4351,7 @@ class Exploration(translation_domain.BaseTranslatableObject):
     @classmethod
     def fix_rte_tags(
         cls, html: str,
+        *,
         is_tags_nested_inside_tabs_or_collapsible: bool = False
     ) -> str:
         """Handles all the invalid RTE tags, performs the following:
@@ -4394,9 +4406,11 @@ class Exploration(translation_domain.BaseTranslatableObject):
 
             if not tag.has_attr('filepath-with-value'):
                 tag.decompose()
-            else:
-                if tag['filepath-with-value'] in empty_values:
-                    tag.decompose()
+                continue
+
+            if tag['filepath-with-value'] in empty_values:
+                tag.decompose()
+                continue
 
             if not tag.has_attr('caption-with-value'):
                 tag['caption-with-value'] = '&quot;&quot;'
@@ -4404,19 +4418,25 @@ class Exploration(translation_domain.BaseTranslatableObject):
         for tag in soup.find_all('oppia-noninteractive-skillreview'):
             if not tag.has_attr('text-with-value'):
                 tag.decompose()
-            else:
-                if tag['text-with-value'] is None:
-                    tag.decompose()
-                elif tag['text-with-value'].strip() in empty_values:
-                    tag.decompose()
+                continue
+
+            if tag['text-with-value'] is None:
+                tag.decompose()
+                continue
+            if tag['text-with-value'].strip() in empty_values:
+                tag.decompose()
+                continue
 
             if not tag.has_attr('skill_id-with-value'):
                 tag.decompose()
-            else:
-                if tag['skill_id-with-value'] is None:
-                    tag.decompose()
-                elif tag['skill_id-with-value'].strip() in empty_values:
-                    tag.decompose()
+                continue
+
+            if tag['skill_id-with-value'] is None:
+                tag.decompose()
+                continue
+            if tag['skill_id-with-value'].strip() in empty_values:
+                tag.decompose()
+                continue
 
         for tag in soup.find_all('oppia-noninteractive-video'):
             if not tag.has_attr('start-with-value'):
@@ -4442,17 +4462,20 @@ class Exploration(translation_domain.BaseTranslatableObject):
 
             if not tag.has_attr('video_id-with-value'):
                 tag.decompose()
-            else:
-                if tag['video_id-with-value'] is None:
-                    tag.decompose()
-                elif tag['video_id-with-value'].strip() in empty_values:
-                    tag.decompose()
+                continue
+            if tag['video_id-with-value'] is None:
+                tag.decompose()
+                continue
+            if tag['video_id-with-value'].strip() in empty_values:
+                tag.decompose()
+                continue
 
             start_value = float(tag['start-with-value'])
             end_value = float(tag['end-with-value'])
             if (
-                start_value > end_value and start_value != 0.0
-                and end_value != 0.0
+                start_value > end_value and
+                start_value != 0.0 and
+                end_value != 0.0
             ):
                 tag['end-with-value'] = '0'
                 tag['start-with-value'] = '0'
@@ -4463,39 +4486,45 @@ class Exploration(translation_domain.BaseTranslatableObject):
                 not tag.has_attr('url-with-value')
             ):
                 tag.decompose()
-            else:
-                if (
-                    tag['text-with-value'].strip() in empty_values or
-                    tag['url-with-value'].strip() in empty_values
-                ):
-                    tag.decompose()
+                continue
+
+            if tag['url-with-value'].strip() in empty_values:
+                tag.decompose()
+                continue
 
         for tag in soup.find_all('oppia-noninteractive-math'):
             if not tag.has_attr('math_content-with-value'):
                 tag.decompose()
-            else:
-                if tag['math_content-with-value'] in empty_values:
-                    tag.decompose()
-                math_content_json = utils.unescape_html(
-                    tag['math_content-with-value'])
-                math_content_list = json.loads(math_content_json)
+                continue
 
-                if 'raw_latex' not in math_content_list:
-                    tag.decompose()
-                elif math_content_list['raw_latex'] is None:
-                    tag.decompose()
-                elif math_content_list['raw_latex'].strip() in empty_values:
-                    tag.decompose()
+            if tag['math_content-with-value'] in empty_values:
+                tag.decompose()
+                continue
+            math_content_json = utils.unescape_html(
+                tag['math_content-with-value'])
+            math_content_list = json.loads(math_content_json)
+
+            if 'raw_latex' not in math_content_list:
+                tag.decompose()
+                continue
+            if math_content_list['raw_latex'] is None:
+                tag.decompose()
+                continue
+            if math_content_list['raw_latex'].strip() in empty_values:
+                tag.decompose()
+                continue
 
         if is_tags_nested_inside_tabs_or_collapsible:
             tabs_tags = soup.find_all('oppia-noninteractive-tabs')
             if len(tabs_tags) > 0:
                 for tabs_tag in tabs_tags:
                     tabs_tag.decompose()
+                    continue
             collapsible_tags = soup.find_all('oppia-noninteractive-collapsible')
             if len(collapsible_tags) > 0:
                 for collapsible_tag in collapsible_tags:
                     collapsible_tag.decompose()
+                    continue
 
         return str(soup).replace('<br/>', '<br>')
 
@@ -4518,6 +4547,8 @@ class Exploration(translation_domain.BaseTranslatableObject):
             str. Returns the updated html value.
         """
         soup = bs4.BeautifulSoup(html, 'html.parser')
+        empty_values = [
+            '&quot;&quot;', '\\"&quot;&quot;\\"', '', '\'\'', '\"\"', '<p></p>']
         tabs_tags = soup.find_all('oppia-noninteractive-tabs')
         for tag in tabs_tags:
             if tag.has_attr('tab_contents-with-value'):
@@ -4528,6 +4559,7 @@ class Exploration(translation_domain.BaseTranslatableObject):
 
                 if len(tab_content_list) == 0:
                     tag.decompose()
+                    continue
                 for tab_content in tab_content_list:
                     tab_content['content'] = cls.fix_rte_tags(
                         tab_content['content'],
@@ -4538,6 +4570,7 @@ class Exploration(translation_domain.BaseTranslatableObject):
                     tab_content_json)
             else:
                 tag.decompose()
+                continue
 
         collapsibles_tags = soup.find_all(
             'oppia-noninteractive-collapsible')
@@ -4550,6 +4583,7 @@ class Exploration(translation_domain.BaseTranslatableObject):
                     collapsible_content_json)
                 if len(collapsible_content_list) == 0:
                     tag.decompose()
+                    continue
 
                 collapsible_content_list = cls.fix_rte_tags(
                     collapsible_content_list,
@@ -4560,18 +4594,32 @@ class Exploration(translation_domain.BaseTranslatableObject):
                     collapsible_content_json)
             else:
                 tag.decompose()
+                continue
 
             if tag.has_attr('heading-with-value'):
-                collapsible_heading_json = (
-                    utils.unescape_html(tag['heading-with-value']))
-                collapsible_heading_list = json.loads(
-                    collapsible_heading_json)
-                if len(collapsible_heading_list) == 0:
+                if tag['heading-with-value'].strip() in empty_values:
                     tag.decompose()
+                    continue
             else:
                 tag.decompose()
+                continue
 
         return str(soup).replace('<br/>', '<br>')
+
+    @classmethod
+    def _fix_content(cls, html: str) -> str:
+        """Helper function to fix the html.
+
+        Args:
+            html: str. The html data to fix.
+
+        Returns:
+            html: str. The fixed html data.
+        """
+        html = cls.fix_rte_tags(
+            html, is_tags_nested_inside_tabs_or_collapsible=False)
+        html = cls.fix_tabs_and_collapsible_tags(html)
+        return html
 
     @classmethod
     def _update_state_rte(
@@ -4590,30 +4638,22 @@ class Exploration(translation_domain.BaseTranslatableObject):
         """
         for state in states_dict.values():
             # Fix tags for state content.
-            html: str = state['content']['html']
-            html = cls.fix_rte_tags(html)
-            html = cls.fix_tabs_and_collapsible_tags(html)
-            state['content']['html'] = html
+            html = state['content']['html']
+            state['content']['html'] = cls._fix_content(html)
             # Fix tags for written translations.
             written_translations = (
                 state['written_translations']['translations_mapping'])
             for translation_item in written_translations.values():
                 for translation in translation_item.values():
-                    if isinstance(translation['translation'], List):
+                    if isinstance(translation['translation'], list):
                         translated_element_list = []
                         for element in translation['translation']:
-                            element = cls.fix_rte_tags(element)
-                            element = cls.fix_tabs_and_collapsible_tags(element)
-                            translated_element_list.append(element)
+                            translated_element_list.append(
+                                cls._fix_content(element))
                         translation['translation'] = translated_element_list
                     else:
-                        fixed_translation = cls.fix_rte_tags(
-                            translation['translation'])
-                        fixed_translation = (
-                            cls.fix_tabs_and_collapsible_tags(
-                                fixed_translation)
-                        )
-                        translation['translation'] = fixed_translation
+                        html = translation['translation']
+                        translation['translation'] = cls._fix_content(html)
         return states_dict
 
     @classmethod

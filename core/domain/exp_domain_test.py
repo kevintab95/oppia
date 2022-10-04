@@ -5725,12 +5725,441 @@ title: Title
             'eid', sample_yaml_content)
         self.assertEqual(exploration.to_yaml(), latest_sample_yaml_content)
 
-    def test_fixing_invalid_exploration_data_by_migrating_to_v58(
+    def test_fixing_invalid_labeled_as_correct_exp_data_by_migrating_to_v58(
         self
     ) -> None:
-        """Tests the migration of invalid data from version less than 58."""
+        """Tests if the answer group's destination is state itself then
+        `labelled_as_correct` should be false. Migrates the invalid data.
+        """
 
-    # Migration test for Continue and End interaction.
+        sample_yaml_content_for_lab_as_correct: str = (
+            """author_notes: ''
+auto_tts_enabled: false
+blurb: ''
+category: ''
+correctness_feedback_enabled: true
+edits_allowed: true
+init_state_name: Introduction
+language_code: en
+objective: ''
+param_changes: []
+param_specs: {}
+schema_version: 57
+states:
+  Introduction:
+    card_is_checkpoint: true
+    classifier_model_id: null
+    content:
+      content_id: content
+      html: <p>Numeric interaction validation</p>
+    interaction:
+      answer_groups:
+      - outcome:
+          dest: Introduction
+          dest_if_really_stuck: null
+          feedback:
+            content_id: feedback_2
+            html: <p>fdfdf</p>
+          labelled_as_correct: true
+          missing_prerequisite_skill_id: null
+          param_changes: []
+          refresher_exploration_id: null
+        rule_specs:
+        - inputs:
+            x: 25.0
+          rule_type: Equals
+        - inputs:
+            x: 25.0
+          rule_type: Equals
+        tagged_skill_misconception_id: null
+        training_data: []
+      confirmed_unclassified_answers: []
+      customization_args:
+        requireNonnegativeInput:
+          value: false
+      default_outcome:
+        dest: end
+        dest_if_really_stuck: null
+        feedback:
+          content_id: default_outcome
+          html: <p>df</p>
+        labelled_as_correct: false
+        missing_prerequisite_skill_id: null
+        param_changes: []
+        refresher_exploration_id: null
+      hints: []
+      id: NumericInput
+      solution: null
+    linked_skill_id: null
+    next_content_id_index: 7
+    param_changes: []
+    recorded_voiceovers:
+      voiceovers_mapping:
+        content: {}
+        default_outcome: {}
+        feedback_2: {}
+    solicit_answer_details: false
+    written_translations:
+      translations_mapping:
+        content: {}
+        default_outcome: {}
+        feedback_2: {}
+  end:
+    card_is_checkpoint: false
+    classifier_model_id: null
+    content:
+      content_id: content
+      html: <p>End interaction</p>
+    interaction:
+      answer_groups: []
+      confirmed_unclassified_answers: []
+      customization_args:
+        recommendedExplorationIds:
+          value: []
+      default_outcome: null
+      hints: []
+      id: EndExploration
+      solution: null
+    linked_skill_id: null
+    next_content_id_index: 0
+    param_changes: []
+    recorded_voiceovers:
+      voiceovers_mapping:
+        content: {}
+    solicit_answer_details: false
+    written_translations:
+      translations_mapping:
+        content: {}
+states_schema_version: 52
+tags: []
+title: ''
+""")
+
+        latest_sample_yaml_content_for_lab_as_correct: str = (
+            """author_notes: ''
+auto_tts_enabled: false
+blurb: ''
+category: ''
+correctness_feedback_enabled: true
+edits_allowed: true
+init_state_name: Introduction
+language_code: en
+objective: ''
+param_changes: []
+param_specs: {}
+schema_version: 58
+states:
+  Introduction:
+    card_is_checkpoint: true
+    classifier_model_id: null
+    content:
+      content_id: content
+      html: <p>Numeric interaction validation</p>
+    interaction:
+      answer_groups:
+      - outcome:
+          dest: Introduction
+          dest_if_really_stuck: null
+          feedback:
+            content_id: feedback_2
+            html: <p>fdfdf</p>
+          labelled_as_correct: false
+          missing_prerequisite_skill_id: null
+          param_changes: []
+          refresher_exploration_id: null
+        rule_specs:
+        - inputs:
+            x: 25.0
+          rule_type: Equals
+        tagged_skill_misconception_id: null
+        training_data: []
+      confirmed_unclassified_answers: []
+      customization_args:
+        requireNonnegativeInput:
+          value: false
+      default_outcome:
+        dest: end
+        dest_if_really_stuck: null
+        feedback:
+          content_id: default_outcome
+          html: <p>df</p>
+        labelled_as_correct: false
+        missing_prerequisite_skill_id: null
+        param_changes: []
+        refresher_exploration_id: null
+      hints: []
+      id: NumericInput
+      solution: null
+    linked_skill_id: null
+    next_content_id_index: 7
+    param_changes: []
+    recorded_voiceovers:
+      voiceovers_mapping:
+        content: {}
+        default_outcome: {}
+        feedback_2: {}
+    solicit_answer_details: false
+    written_translations:
+      translations_mapping:
+        content: {}
+        default_outcome: {}
+        feedback_2: {}
+  end:
+    card_is_checkpoint: false
+    classifier_model_id: null
+    content:
+      content_id: content
+      html: <p>End interaction</p>
+    interaction:
+      answer_groups: []
+      confirmed_unclassified_answers: []
+      customization_args:
+        recommendedExplorationIds:
+          value: []
+      default_outcome: null
+      hints: []
+      id: EndExploration
+      solution: null
+    linked_skill_id: null
+    next_content_id_index: 0
+    param_changes: []
+    recorded_voiceovers:
+      voiceovers_mapping:
+        content: {}
+    solicit_answer_details: false
+    written_translations:
+      translations_mapping:
+        content: {}
+states_schema_version: 53
+tags: []
+title: ''
+""")
+
+        self.maxDiff = None
+        exploration = exp_domain.Exploration.from_yaml(
+            'eid', sample_yaml_content_for_lab_as_correct)
+        self.assertEqual(
+            exploration.to_yaml(),
+            latest_sample_yaml_content_for_lab_as_correct)
+
+    def test_fixing_of_rte_content_by_migrating_to_v_58(
+        self
+    ) -> None:
+        """Tests the fixing of RTE content data from version less than 58."""
+
+        sample_yaml_content_for_cont_and_end_interac: str = (
+            """author_notes: ''
+auto_tts_enabled: false
+blurb: ''
+category: ''
+correctness_feedback_enabled: true
+edits_allowed: true
+init_state_name: Introduction
+language_code: en
+objective: ''
+param_changes: []
+param_specs: {}
+schema_version: 57
+states:
+  Introduction:
+    card_is_checkpoint: true
+    classifier_model_id: null
+    content:
+      content_id: content
+      html: '<p>Content of RTE</p>
+
+        <oppia-noninteractive-image alt-with-value="&amp;quot;&amp;quot;" caption-with-value="&amp;quot;&amp;quot;" filepath-with-value="&amp;quot;img_20220923_043536_g7mr3k59oa_height_374_width_490.svg&amp;quot;"></oppia-noninteractive-image>
+        <oppia-noninteractive-link text-with-value="&amp;quot;&amp;quot;" url-with-value="&amp;quot;&amp;quot;"></oppia-noninteractive-link>
+        <oppia-noninteractive-math math_content-with-value="{&amp;quot;raw_latex&amp;quot;:&amp;quot;\\frac{x}{y}&amp;quot;,&amp;quot;svg_filename&amp;quot;:&amp;quot;mathImg_20220923_043725_4riv8t66q8_height_3d205_width_1d784_vertical_1d306.svg&amp;quot;}"></oppia-noninteractive-math>
+        <oppia-noninteractive-skillreview skill_id-with-value="&amp;quot;&amp;quot;" text-with-value="&amp;quot;concept card&amp;quot;"></oppia-noninteractive-skillreview>
+        <oppia-noninteractive-video autoplay-with-value="&amp;quot;&amp;quot;" end-with-value="&amp;quot;&amp;quot;" start-with-value="&amp;quot;&amp;quot;" video_id-with-value="&amp;quot;mhlEfHv-LHo&amp;quot;"></oppia-noninteractive-video>
+        <oppia-noninteractive-collapsible content-with-value=\"&amp;quot;&amp;lt;p&amp;gt;You have opened the collapsible block.&amp;lt;/p&amp;gt;&amp;lt;oppia-noninteractive-video _nghost-ovd-c35=\\&amp;quot;\\&amp;quot; autoplay-with-value=\\&amp;quot;true\\&amp;quot; end-with-value=\\&amp;quot;&amp;amp;amp;quot;&amp;amp;amp;quot;\\&amp;quot; ng-version=\\&amp;quot;11.2.14\\&amp;quot; start-with-value=\\&amp;quot;&amp;amp;amp;quot;&amp;amp;amp;quot;\\&amp;quot; video_id-with-value=\\&amp;quot;&amp;amp;amp;quot;hfnv-dfbv5h&amp;amp;amp;quot;\\&amp;quot;&amp;gt;&amp;lt;/oppia-noninteractive-video&amp;gt;&amp;quot;\" heading-with-value=\\"&amp;quot;&amp;quot;\\"></oppia-noninteractive-collapsible>
+        <oppia-noninteractive-collapsible content-with-value=\"&amp;quot;&amp;lt;p&amp;gt;You have opened the collapsible block.&amp;lt;/p&amp;gt;&amp;lt;oppia-noninteractive-video _nghost-ovd-c35=\\&amp;quot;\\&amp;quot; autoplay-with-value=\\&amp;quot;true\\&amp;quot; end-with-value=\\&amp;quot;&amp;amp;amp;quot;&amp;amp;amp;quot;\\&amp;quot; ng-version=\\&amp;quot;11.2.14\\&amp;quot; start-with-value=\\&amp;quot;&amp;amp;amp;quot;&amp;amp;amp;quot;\\&amp;quot; video_id-with-value=\\&amp;quot;&amp;amp;amp;quot;hfnv-dfbv5h&amp;amp;amp;quot;\\&amp;quot;&amp;gt;&amp;lt;/oppia-noninteractive-video&amp;gt;&amp;quot;\" heading-with-value=\"&amp;quot;heading&amp;quot;\"></oppia-noninteractive-collapsible>'
+    interaction:
+      answer_groups: []
+      confirmed_unclassified_answers: []
+      customization_args:
+        buttonText:
+          value:
+            content_id: ca_buttonText_0
+            unicode_str: Continueeeeeeeeeeeeeeeeeeeeeee
+      default_outcome:
+        dest: end
+        dest_if_really_stuck: null
+        feedback:
+          content_id: default_outcome
+          html: ''
+        labelled_as_correct: false
+        missing_prerequisite_skill_id: null
+        param_changes: []
+        refresher_exploration_id: null
+      hints: []
+      id: Continue
+      solution: null
+    linked_skill_id: null
+    next_content_id_index: 1
+    param_changes: []
+    recorded_voiceovers:
+      voiceovers_mapping:
+        ca_buttonText_0: {}
+        content: {}
+        default_outcome: {}
+    solicit_answer_details: false
+    written_translations:
+      translations_mapping:
+        ca_buttonText_0: {}
+        content: {}
+        default_outcome: {}
+  end:
+    card_is_checkpoint: false
+    classifier_model_id: null
+    content:
+      content_id: content
+      html: <p>End interaction</p>
+    interaction:
+      answer_groups: []
+      confirmed_unclassified_answers: []
+      customization_args:
+        recommendedExplorationIds:
+          value:
+          - id1
+          - id2
+          - id3
+          - id4
+      default_outcome: null
+      hints: []
+      id: EndExploration
+      solution: null
+    linked_skill_id: null
+    next_content_id_index: 0
+    param_changes: []
+    recorded_voiceovers:
+      voiceovers_mapping:
+        content: {}
+    solicit_answer_details: false
+    written_translations:
+      translations_mapping:
+        content: {}
+states_schema_version: 52
+tags: []
+title: ''
+""")
+
+        latest_sample_yaml_content_for_cont_and_end_interac: str = (
+            """author_notes: ''
+auto_tts_enabled: false
+blurb: ''
+category: ''
+correctness_feedback_enabled: true
+edits_allowed: true
+init_state_name: Introduction
+language_code: en
+objective: ''
+param_changes: []
+param_specs: {}
+schema_version: 58
+states:
+  Introduction:
+    card_is_checkpoint: true
+    classifier_model_id: null
+    content:
+      content_id: content
+      html: '<p>Content of RTE</p>
+
+        <oppia-noninteractive-image alt-with-value="&amp;quot;&amp;quot;" caption-with-value="&amp;quot;&amp;quot;"
+        filepath-with-value="&amp;quot;img_20220923_043536_g7mr3k59oa_height_374_width_490.svg&amp;quot;"></oppia-noninteractive-image>
+        <oppia-noninteractive-math math_content-with-value="{&amp;quot;raw_latex&amp;quot;:&amp;quot;\\frac{x}{y}&amp;quot;,&amp;quot;svg_filename&amp;quot;:&amp;quot;mathImg_20220923_043725_4riv8t66q8_height_3d205_width_1d784_vertical_1d306.svg&amp;quot;}"></oppia-noninteractive-math>
+        <oppia-noninteractive-video autoplay-with-value="false" end-with-value="0"
+        start-with-value="0" video_id-with-value="&amp;quot;mhlEfHv-LHo&amp;quot;"></oppia-noninteractive-video>  <oppia-noninteractive-collapsible
+        content-with-value="&amp;quot;&amp;lt;p&amp;gt;You have opened the collapsible
+        block.&amp;lt;/p&amp;gt;&amp;lt;oppia-noninteractive-video _nghost-ovd-c35=\&amp;quot;\&amp;quot;
+        autoplay-with-value=\&amp;quot;true\&amp;quot; end-with-value=\&amp;quot;0\&amp;quot;
+        ng-version=\&amp;quot;11.2.14\&amp;quot; start-with-value=\&amp;quot;0\&amp;quot;
+        video_id-with-value=\&amp;quot;&amp;amp;amp;quot;hfnv-dfbv5h&amp;amp;amp;quot;\&amp;quot;&amp;gt;&amp;lt;/oppia-noninteractive-video&amp;gt;&amp;quot;"
+        heading-with-value="&amp;quot;heading&amp;quot;"></oppia-noninteractive-collapsible>'
+    interaction:
+      answer_groups: []
+      confirmed_unclassified_answers: []
+      customization_args:
+        buttonText:
+          value:
+            content_id: ca_buttonText_0
+            unicode_str: Continue
+      default_outcome:
+        dest: end
+        dest_if_really_stuck: null
+        feedback:
+          content_id: default_outcome
+          html: ''
+        labelled_as_correct: false
+        missing_prerequisite_skill_id: null
+        param_changes: []
+        refresher_exploration_id: null
+      hints: []
+      id: Continue
+      solution: null
+    linked_skill_id: null
+    next_content_id_index: 1
+    param_changes: []
+    recorded_voiceovers:
+      voiceovers_mapping:
+        ca_buttonText_0: {}
+        content: {}
+        default_outcome: {}
+    solicit_answer_details: false
+    written_translations:
+      translations_mapping:
+        ca_buttonText_0: {}
+        content: {}
+        default_outcome: {}
+  end:
+    card_is_checkpoint: false
+    classifier_model_id: null
+    content:
+      content_id: content
+      html: <p>End interaction</p>
+    interaction:
+      answer_groups: []
+      confirmed_unclassified_answers: []
+      customization_args:
+        recommendedExplorationIds:
+          value:
+          - id1
+          - id2
+          - id3
+      default_outcome: null
+      hints: []
+      id: EndExploration
+      solution: null
+    linked_skill_id: null
+    next_content_id_index: 0
+    param_changes: []
+    recorded_voiceovers:
+      voiceovers_mapping:
+        content: {}
+    solicit_answer_details: false
+    written_translations:
+      translations_mapping:
+        content: {}
+states_schema_version: 53
+tags: []
+title: ''
+""")
+
+        self.maxDiff = None
+        exploration = exp_domain.Exploration.from_yaml(
+            'eid', sample_yaml_content_for_cont_and_end_interac)
+        self.assertEqual(
+            exploration.to_yaml(),
+            latest_sample_yaml_content_for_cont_and_end_interac)
+
+    def test_fixing_invalid_continue_and_end_exp_data_by_migrating_to_v58(
+        self
+    ) -> None:
+        """Tests the migration of invalid continue and end exploration data
+        from version less than 58.
+        """
+
         sample_yaml_content_for_cont_and_end_interac: str = (
             """author_notes: ''
 auto_tts_enabled: false
@@ -5917,7 +6346,13 @@ title: ''
             exploration.to_yaml(),
             latest_sample_yaml_content_for_cont_and_end_interac)
 
-    # Migration test for NumericInput interaction.
+    def test_fixing_invalid_numeric_exp_data_by_migrating_to_v58(
+        self
+    ) -> None:
+        """Tests the migration of invalid NumericInput interaction exploration
+        data from version less than 58.
+        """
+
         sample_yaml_content_for_numeric_interac: str = (
             """author_notes: ''
 auto_tts_enabled: false
@@ -6317,7 +6752,13 @@ title: ''
             exploration.to_yaml(),
             latest_sample_yaml_content_for_numeric_interac)
 
-    # Migration test for FractionInput interaction.
+    def test_fixing_invalid_fraction_exp_data_by_migrating_to_v58(
+        self
+    ) -> None:
+        """Tests the migration of invalid FractionInput interaction exploration
+        data from version less than 58.
+        """
+
         sample_yaml_content_for_fraction_interac: str = (
             """author_notes: ''
 auto_tts_enabled: false
@@ -6730,7 +7171,13 @@ title: ''
             exploration.to_yaml(),
             latest_sample_yaml_content_for_fraction_interac)
 
-    # Migration test for MultipleChoice interaction.
+    def test_fixing_invalid_multiple_choice_exp_data_by_migrating_to_v58(
+        self
+    ) -> None:
+        """Tests the migration of invalid MultipleChoice interaction exploration
+        data from version less than 58.
+        """
+
         sample_yaml_content_for_multiple_choice_interac: str = (
             """author_notes: ''
 auto_tts_enabled: false
@@ -7030,7 +7477,13 @@ title: ''
             exploration.to_yaml(),
             latest_sample_yaml_content_for_multiple_choice_interac)
 
-    # Migration test for ItemSelection interaction.
+    def test_fixing_invalid_item_selec_exp_data_by_migrating_to_v58(
+        self
+    ) -> None:
+        """Tests the migration of invalid ItemSelection interaction exploration
+        data from version less than 58.
+        """
+
         sample_yaml_content_for_item_selection_interac: str = (
             """author_notes: ''
 auto_tts_enabled: false
@@ -7338,7 +7791,13 @@ title: ''
             exploration.to_yaml(),
             latest_sample_yaml_content_for_item_selection_interac)
 
-    # Migration test for DragAndDrop interaction.
+    def test_fixing_invalid_drag_and_drop_exp_data_by_migrating_to_v58(
+        self
+    ) -> None:
+        """Tests the migration of invalid DragAndDrop interaction exploration
+        data from version less than 58.
+        """
+
         sample_yaml_content_for_drag_and_drop_interac: str = (
             """author_notes: ''
 auto_tts_enabled: false
@@ -7657,7 +8116,13 @@ title: ''
             exploration.to_yaml(),
             latest_sample_yaml_content_for_drag_and_drop_interac)
 
-    # Migration test for TextInput interaction.
+    def test_fixing_invalid_text_exp_data_by_migrating_to_v58(
+        self
+    ) -> None:
+        """Tests the migration of invalid TextInput interaction exploration
+        data from version less than 58.
+        """
+
         sample_yaml_content_for_text_interac: str = (
             """author_notes: ''
 auto_tts_enabled: false
@@ -8112,6 +8577,7 @@ title: ''
         self.assertEqual(
             exploration.to_yaml(),
             latest_sample_yaml_content_for_text_interac)
+
 
 class ConversionUnitTests(test_utils.GenericTestBase):
     """Test conversion methods."""
