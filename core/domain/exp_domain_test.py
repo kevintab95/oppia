@@ -6212,7 +6212,11 @@ states:
     solicit_answer_details: false
     written_translations:
       translations_mapping:
-        ca_buttonText_0: {}
+        ca_buttonText_0:
+          hi:
+            data_format: html
+            translation: <p>choicewa</p>
+            needs_update: false
         content: {}
         default_outcome: {}
   end:
@@ -6259,6 +6263,196 @@ correctness_feedback_enabled: true
 edits_allowed: true
 init_state_name: Introduction
 language_code: en
+objective: ''
+param_changes: []
+param_specs: {}
+schema_version: 58
+states:
+  Introduction:
+    card_is_checkpoint: true
+    classifier_model_id: null
+    content:
+      content_id: content
+      html: <p>Continue and End interaction validation</p>
+    interaction:
+      answer_groups: []
+      confirmed_unclassified_answers: []
+      customization_args:
+        buttonText:
+          value:
+            content_id: ca_buttonText_0
+            unicode_str: Continue
+      default_outcome:
+        dest: end
+        dest_if_really_stuck: null
+        feedback:
+          content_id: default_outcome
+          html: ''
+        labelled_as_correct: false
+        missing_prerequisite_skill_id: null
+        param_changes: []
+        refresher_exploration_id: null
+      hints: []
+      id: Continue
+      solution: null
+    linked_skill_id: null
+    next_content_id_index: 1
+    param_changes: []
+    recorded_voiceovers:
+      voiceovers_mapping:
+        ca_buttonText_0: {}
+        content: {}
+        default_outcome: {}
+    solicit_answer_details: false
+    written_translations:
+      translations_mapping:
+        ca_buttonText_0:
+          hi:
+            data_format: html
+            needs_update: true
+            translation: <p>choicewa</p>
+        content: {}
+        default_outcome: {}
+  end:
+    card_is_checkpoint: false
+    classifier_model_id: null
+    content:
+      content_id: content
+      html: <p>End interaction</p>
+    interaction:
+      answer_groups: []
+      confirmed_unclassified_answers: []
+      customization_args:
+        recommendedExplorationIds:
+          value:
+          - id1
+          - id2
+          - id3
+      default_outcome: null
+      hints: []
+      id: EndExploration
+      solution: null
+    linked_skill_id: null
+    next_content_id_index: 0
+    param_changes: []
+    recorded_voiceovers:
+      voiceovers_mapping:
+        content: {}
+    solicit_answer_details: false
+    written_translations:
+      translations_mapping:
+        content: {}
+states_schema_version: 53
+tags: []
+title: ''
+""")
+
+        self.maxDiff = None
+        exploration = exp_domain.Exploration.from_yaml(
+            'eid', sample_yaml_content_for_cont_and_end_interac)
+        self.assertEqual(
+            exploration.to_yaml(),
+            latest_sample_yaml_content_for_cont_and_end_interac)
+
+        sample_yaml_content_for_cont_and_end_interac: str = (
+            """author_notes: ''
+auto_tts_enabled: false
+blurb: ''
+category: ''
+correctness_feedback_enabled: true
+edits_allowed: true
+init_state_name: Introduction
+language_code: hi
+objective: ''
+param_changes: []
+param_specs: {}
+schema_version: 57
+states:
+  Introduction:
+    card_is_checkpoint: true
+    classifier_model_id: null
+    content:
+      content_id: content
+      html: <p>Continue and End interaction validation</p>
+    interaction:
+      answer_groups: []
+      confirmed_unclassified_answers: []
+      customization_args:
+        buttonText:
+          value:
+            content_id: ca_buttonText_0
+            unicode_str: Continueeeeeeeeeeeeeeeeeeeeeee
+      default_outcome:
+        dest: end
+        dest_if_really_stuck: null
+        feedback:
+          content_id: default_outcome
+          html: ''
+        labelled_as_correct: false
+        missing_prerequisite_skill_id: null
+        param_changes: []
+        refresher_exploration_id: null
+      hints: []
+      id: Continue
+      solution: null
+    linked_skill_id: null
+    next_content_id_index: 1
+    param_changes: []
+    recorded_voiceovers:
+      voiceovers_mapping:
+        ca_buttonText_0: {}
+        content: {}
+        default_outcome: {}
+    solicit_answer_details: false
+    written_translations:
+      translations_mapping:
+        ca_buttonText_0: {}
+        content: {}
+        default_outcome: {}
+  end:
+    card_is_checkpoint: false
+    classifier_model_id: null
+    content:
+      content_id: content
+      html: <p>End interaction</p>
+    interaction:
+      answer_groups: []
+      confirmed_unclassified_answers: []
+      customization_args:
+        recommendedExplorationIds:
+          value:
+          - id1
+          - id2
+          - id3
+          - id4
+      default_outcome: null
+      hints: []
+      id: EndExploration
+      solution: null
+    linked_skill_id: null
+    next_content_id_index: 0
+    param_changes: []
+    recorded_voiceovers:
+      voiceovers_mapping:
+        content: {}
+    solicit_answer_details: false
+    written_translations:
+      translations_mapping:
+        content: {}
+states_schema_version: 52
+tags: []
+title: ''
+""")
+
+        latest_sample_yaml_content_for_cont_and_end_interac: str = (
+            """author_notes: ''
+auto_tts_enabled: false
+blurb: ''
+category: ''
+correctness_feedback_enabled: true
+edits_allowed: true
+init_state_name: Introduction
+language_code: hi
 objective: ''
 param_changes: []
 param_specs: {}
@@ -6408,6 +6602,14 @@ states:
         - inputs:
             x: 25.0
           rule_type: Equals
+        - inputs:
+            tol: -5.0
+            x: 5.0
+          rule_type: IsWithinTolerance
+        - inputs:
+            a: 39.0
+            b: 30.0
+          rule_type: IsInclusivelyBetween
         tagged_skill_misconception_id: null
         training_data: []
       - outcome:
@@ -6447,8 +6649,8 @@ states:
             x: 5.0
           rule_type: IsLessThan
         - inputs:
-            a: 5.0
-            b: 9.0
+            a: 9.0
+            b: 5.0
           rule_type: IsInclusivelyBetween
         - inputs:
             tol: 2.0
@@ -6645,6 +6847,14 @@ states:
         - inputs:
             x: 25.0
           rule_type: Equals
+        - inputs:
+            tol: 5.0
+            x: 5.0
+          rule_type: IsWithinTolerance
+        - inputs:
+            a: 30.0
+            b: 39.0
+          rule_type: IsInclusivelyBetween
         tagged_skill_misconception_id: null
         training_data: []
       - outcome:
@@ -6908,6 +7118,26 @@ states:
           rule_type: HasDenominatorEqualTo
         tagged_skill_misconception_id: null
         training_data: []
+      - outcome:
+          dest: Introduction
+          dest_if_really_stuck: null
+          feedback:
+            content_id: feedback_13
+            html: <p>hj</p>
+          labelled_as_correct: false
+          missing_prerequisite_skill_id: null
+          param_changes: []
+          refresher_exploration_id: null
+        rule_specs:
+        - inputs:
+            f:
+              denominator: 3
+              isNegative: false
+              numerator: 17
+              wholeNumber: 0
+          rule_type: IsExactlyEqualTo
+        tagged_skill_misconception_id: null
+        training_data: []
       confirmed_unclassified_answers: []
       customization_args:
         allowImproperFraction:
@@ -6934,7 +7164,7 @@ states:
       id: FractionInput
       solution: null
     linked_skill_id: null
-    next_content_id_index: 13
+    next_content_id_index: 14
     param_changes: []
     recorded_voiceovers:
       voiceovers_mapping:
@@ -6944,6 +7174,7 @@ states:
         feedback_10: {}
         feedback_11: {}
         feedback_12: {}
+        feedback_13: {}
         feedback_8: {}
         feedback_9: {}
     solicit_answer_details: false
@@ -6955,6 +7186,7 @@ states:
         feedback_10: {}
         feedback_11: {}
         feedback_12: {}
+        feedback_13: {}
         feedback_8: {}
         feedback_9: {}
   end:
@@ -7112,7 +7344,7 @@ states:
       id: FractionInput
       solution: null
     linked_skill_id: null
-    next_content_id_index: 13
+    next_content_id_index: 14
     param_changes: []
     recorded_voiceovers:
       voiceovers_mapping:
@@ -7861,6 +8093,10 @@ states:
             x:
             - ca_choices_20
           rule_type: Equals
+        - inputs:
+            x:
+            - ca_choices_21
+          rule_type: Equals
         tagged_skill_misconception_id: null
         training_data: []
       - outcome:
@@ -8025,6 +8261,10 @@ states:
         - inputs:
             x:
             - ca_choices_20
+          rule_type: Equals
+        - inputs:
+            x:
+            - ca_choices_21
           rule_type: Equals
         tagged_skill_misconception_id: null
         training_data: []
