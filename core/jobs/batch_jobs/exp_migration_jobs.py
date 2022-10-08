@@ -820,6 +820,7 @@ class ExpSnapshotsMigrationAuditJob(base_jobs.JobBase):
             current_state_schema_version = (
                 exp_snapshot_model.content['states_schema_version']
             )
+            language_code = exp_snapshot_model.content['language_code']
             if current_state_schema_version == target_state_schema_version:
                 return result.Err(
                     (
@@ -838,7 +839,8 @@ class ExpSnapshotsMigrationAuditJob(base_jobs.JobBase):
                         exp_domain.Exploration.update_states_from_model(
                             versioned_exploration_states,
                             current_state_schema_version,
-                            exp_id)
+                            exp_id,
+                            language_code)
                     current_state_schema_version += 1
                 except Exception as e:
                     error_message = (
@@ -960,6 +962,7 @@ class ExpSnapshotsMigrationJob(base_jobs.JobBase):
         current_state_schema_version = (
             exp_snapshot_model.content['states_schema_version']
         )
+        language_code = exp_snapshot_model.content['language_code']
         if current_state_schema_version == target_state_schema_version:
             return result.Err(
                 (
@@ -978,7 +981,8 @@ class ExpSnapshotsMigrationJob(base_jobs.JobBase):
                     exp_domain.Exploration.update_states_from_model(
                         versioned_exploration_states,
                         current_state_schema_version,
-                        exp_id)
+                        exp_id,
+                        language_code)
                 current_state_schema_version += 1
             except Exception as e:
                 error_message = (
