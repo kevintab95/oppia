@@ -962,7 +962,18 @@ class ExpSnapshotsMigrationJob(base_jobs.JobBase):
         current_state_schema_version = (
             exp_snapshot_model.content['states_schema_version']
         )
-        language_code = exp_snapshot_model.content['language_code']
+        try:
+            language_code = exp_snapshot_model.content['language_code']
+        except KeyError:
+            return result.Err(
+                (
+                    exp_id,
+                    Exception(
+                        'Snapshot %s does not have a language code.'
+                        % exp_snapshot_model.id
+                    )
+                )
+            )
         if current_state_schema_version == target_state_schema_version:
             return result.Err(
                 (
