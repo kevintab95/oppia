@@ -17,8 +17,7 @@
 """Job for computation of exploration version history data."""
 
 from __future__ import annotations
-
-import copy
+import logging
 
 from core import feconf
 from core.domain import exp_domain
@@ -49,7 +48,8 @@ class UnformattedModelGroupDict(TypedDict):
 
     all_exp_models: List[exp_domain.Exploration]
     exp_models_vlatest: List[exp_domain.Exploration]
-    commit_log_models: List[exp_models.ExplorationCommitLogEntryModel]
+    commit_log_models: List[Optional[
+        exp_models.ExplorationCommitLogEntryModel]]
     version_history_models: (
         List[Optional[exp_models.ExplorationVersionHistoryModel]]
     )
@@ -60,7 +60,8 @@ class FormattedModelGroupDict(TypedDict):
 
     exp_vlatest: exp_domain.Exploration
     all_explorations: List[exp_domain.Exploration]
-    commit_log_models: List[exp_models.ExplorationCommitLogEntryModel]
+    commit_log_models: List[Optional[
+        exp_models.ExplorationCommitLogEntryModel]]
     version_history_models: (
         List[Optional[exp_models.ExplorationVersionHistoryModel]]
     )
@@ -72,7 +73,7 @@ class ComputeExplorationVersionHistoryJob(base_jobs.JobBase):
     def convert_to_formatted_model_group(
         self, model_group: UnformattedModelGroupDict
     ) -> Optional[FormattedModelGroupDict]:
-        """Returns True if the given model group is valid.
+        """Returns True if the given model group is valid .
 
         Args:
             model_group: UnformattedModelGroupDict. The model group to be
@@ -137,9 +138,18 @@ class ComputeExplorationVersionHistoryJob(base_jobs.JobBase):
                             all_version_history_models[
                                 version_history.exploration_version - 1
                             ] = version_history
+
+                    # The following lists are just to fix the MyPy errors.
+                    # No entity in the above lists are None if the model group
+                    # is valid.
+                    explorations_without_none: List[
+                        exp_domain.Exploration] = []
+                    for exploration in all_explorations:
+                        if exploration is not None:
+                            explorations_without_none.append(exploration)
                     response_dict = {
                         'exp_vlatest': exp_model_vlatest,
-                        'all_explorations': all_explorations,
+                        'all_explorations': explorations_without_none,
                         'commit_log_models': all_commit_log_models,
                         'version_history_models': all_version_history_models
                     }
@@ -310,6 +320,7 @@ class ComputeExplorationVersionHistoryJob(base_jobs.JobBase):
             exp_id = exp_vlatest.id
 
             commit_log_model_v1 = commit_log_models[0]
+            assert commit_log_model_v1 is not None
             committer_id_v1 = commit_log_model_v1.user_id
             states_vh_at_v1 = {
                 state_name: state_domain.StateVersionHistory(
@@ -331,6 +342,7 @@ class ComputeExplorationVersionHistoryJob(base_jobs.JobBase):
 
             for version in range(2, exp_version + 1):
                 commit_log_model = commit_log_models[version - 1]
+                assert commit_log_model is not None
                 committer_id: str = commit_log_model.user_id
                 change_list: List[exp_domain.ExplorationChange] = []
                 for change_dict in commit_log_model.commit_cmds:
@@ -366,8 +378,9 @@ class ComputeExplorationVersionHistoryJob(base_jobs.JobBase):
                     revert_to_vh_model = (
                         version_history_models[revert_to_version - 1]
                     )
+                    assert revert_to_vh_model is not None
                     new_vh_model = self.get_reverted_version_history_model(
-                        revert_to_vh_model, # type: ignore[arg-type]
+                        revert_to_vh_model,
                         version_history_models[version - 1],
                         exp_id, version
                     )
@@ -386,6 +399,7 @@ class ComputeExplorationVersionHistoryJob(base_jobs.JobBase):
                     new_metadata_dict = new_exploration.get_metadata().to_dict()
 
                     old_vh_model = version_history_models[version - 2]
+                    assert old_vh_model is not None
                     old_states_vh = {
                         state_name: (
                             state_domain.StateVersionHistory.from_dict(
@@ -393,11 +407,11 @@ class ComputeExplorationVersionHistoryJob(base_jobs.JobBase):
                             )
                         )
                         for state_name, state_vh_dict in
-                        old_vh_model.state_version_history.items() # type: ignore[union-attr]
+                        old_vh_model.state_version_history.items()
                     }
                     old_metadata_vh = exp_domain.MetadataVersionHistory(
-                        old_vh_model.metadata_last_edited_version_number, # type: ignore[union-attr]
-                        old_vh_model.metadata_last_edited_committer_id # type: ignore[union-attr]
+                        old_vh_model.metadata_last_edited_version_number,
+                        old_vh_model.metadata_last_edited_committer_id
                     )
 
                     try:
@@ -427,8 +441,64 @@ class ComputeExplorationVersionHistoryJob(base_jobs.JobBase):
                         new_vh_model.update_timestamps()
                         version_history_models[version - 1] = new_vh_model
                     except Exception as e:
+                        logging.info('For exploration %s' % (exp_id))
+                        for i in range(1, version + 1):
+                            logging.info(
+                                'Commit commands at version %d: %s' % (
+                                    i, commit_log_models[i - 1].commit_cmds
+                                )
+                            )
+                            change_list: List[
+                                exp_domain.ExplorationChange
+                            ] = []
+                            for change_dict in (
+                                commit_log_models[i - 1].commit_cmds
+                            ):
+                                try:
+                                    change_list.append(
+                                        exp_domain.ExplorationChange(
+                                            change_dict
+                                        )
+                                    )
+                                except Exception:
+                                    continue
+                            exp_versions_diff = (
+                                exp_domain.ExplorationVersionsDiff(
+                                    change_list
+                                )
+                            )
+                            logging.info(
+                                'Added states at version %d: %s' % (
+                                    i, exp_versions_diff.added_state_names
+                                )
+                            )
+                            logging.info(
+                                'Deleted states at version %d: %s' % (
+                                    i, exp_versions_diff.deleted_state_names
+                                )
+                            )
+                            logging.info(
+                                'Renamed states at version %d: %s' % (
+                                    i, exp_versions_diff.old_to_new_state_names
+                                )
+                            )
+                        for i in range(1, version):
+                            logging.info(
+                                'State version history at version %d: %s' % (
+                                    i, version_history_models[
+                                        i - 1
+                                    ].state_version_history
+                                )
+                            )
                         return (exp_id, [], e, version)
-            return (exp_id, version_history_models) # type: ignore[return-value]
+
+            # The following block is used to prevent MyPy errors.
+            vh_models_without_none: List[
+                exp_models.ExplorationVersionHistoryModel] = []
+            for vh_model in version_history_models:
+                if vh_model is not None: # pragma: no cover
+                    vh_models_without_none.append(vh_model)
+            return (exp_id, vh_models_without_none)
 
     def generate_exploration_from_snapshot(
         self, snapshot_model: exp_models.ExplorationSnapshotContentModel
@@ -652,7 +722,7 @@ class VerifyVersionHistoryModelsJob(base_jobs.JobBase):
 
     def generate_exploration_from_snapshot(
         self, snapshot_model: exp_models.ExplorationSnapshotContentModel
-    ) -> exp_models.ExplorationModel:
+    ) -> Optional[exp_models.ExplorationModel]:
         """Returns the exploration model with given id at version 1.
 
         Args:
@@ -674,7 +744,7 @@ class VerifyVersionHistoryModelsJob(base_jobs.JobBase):
                 reconstituted_model.last_updated = snapshot_model.last_updated
                 return reconstituted_model
             except Exception:
-                return None # type: ignore[return-value]
+                return None
 
     def convert_to_formatted_model_group(
         self, model_group: UnformattedModelGroupDict
@@ -696,7 +766,7 @@ class VerifyVersionHistoryModelsJob(base_jobs.JobBase):
         response_dict: Optional[FormattedModelGroupDict] = None
 
         model_group_is_valid = len(exp_models_vlatest) == 1
-        if model_group_is_valid:
+        if model_group_is_valid: # pragma: no cover
             exp_model_vlatest = exp_models_vlatest[0]
 
             all_explorations: List[Optional[exp_domain.Exploration]] = (
@@ -707,7 +777,7 @@ class VerifyVersionHistoryModelsJob(base_jobs.JobBase):
                     exp_model is not None and
                     exp_model.version >= 1 and
                     exp_model.version <= exp_model_vlatest.version
-                ):
+                ): # pragma: no cover
                     all_explorations[exp_model.version - 1] = exp_model
             model_group_is_valid = (all_explorations.count(None) == 0)
 
@@ -723,13 +793,13 @@ class VerifyVersionHistoryModelsJob(base_jobs.JobBase):
                         commit_log.version is not None and
                         commit_log.version >= 1 and
                         commit_log.version <= exp_model_vlatest.version
-                    ):
+                    ): # pragma: no cover
                         all_commit_log_models[
                             commit_log.version - 1
                         ] = commit_log
                 model_group_is_valid = (all_commit_log_models.count(None) == 0)
 
-                if model_group_is_valid:
+                if model_group_is_valid: # pragma: no cover
                     all_version_history_models: List[Optional[
                         exp_models.ExplorationVersionHistoryModel
                     ]] = [None] * exp_model_vlatest.version
@@ -748,67 +818,22 @@ class VerifyVersionHistoryModelsJob(base_jobs.JobBase):
                         all_version_history_models.count(None) == 0
                     )
 
-                    if model_group_is_valid:
+                    # The following lists are just to fix the MyPy errors.
+                    # No entity in the above lists are None if the model group
+                    # is valid.
+                    explorations_without_none: List[
+                        exp_domain.Exploration] = []
+                    for exploration in all_explorations:
+                        if exploration is not None: # pragma: no cover
+                            explorations_without_none.append(exploration)
+                    if model_group_is_valid: # pragma: no cover
                         response_dict = {
                             'exp_vlatest': exp_model_vlatest,
-                            'all_explorations': all_explorations,
+                            'all_explorations': explorations_without_none,
                             'commit_log_models': all_commit_log_models,
                             'version_history_models': all_version_history_models
                         }
         return response_dict
-
-    def compare_version_histories(
-        self,
-        expected_state_vh: Dict[str, state_domain.StateVersionHistory],
-        expected_metadata_vh: exp_domain.MetadataVersionHistory,
-        actual_state_vh: Dict[str, state_domain.StateVersionHistory],
-        actual_metadata_vh: exp_domain.MetadataVersionHistory
-    ) -> bool:
-        """Compares the given state and metadata version histories and
-        returns True if both are equal.
-
-        Args:
-            expected_state_vh: Dict[str, StateVersionHistory]. The expected
-                state version history.
-            expected_metadata_vh: MetadataVersionHistory. The expected
-                metadata version history.
-            actual_state_vh: Dict[str, StateVersionHistory]. The actual
-                metadata version history.
-            actual_metadata_vh: MetadataVersionHistory. The actual metadata
-                version history.
-
-        Returns:
-            bool. Whether the actual version histories are equal to the
-            expected ones.
-        """
-        expected_state_vh_dict = {
-            state_name: state_vh.to_dict()
-            for state_name, state_vh in expected_state_vh.items()
-        }
-        actual_state_vh_dict = {
-            state_name: state_vh.to_dict()
-            for state_name, state_vh in actual_state_vh.items()
-        }
-        if expected_state_vh_dict != actual_state_vh_dict:
-            return False
-        return expected_metadata_vh.to_dict() == actual_metadata_vh.to_dict()
-
-    def check_for_revert_commit(
-        self, change_list: List[exp_domain.ExplorationChange]
-    ) -> Optional[int]:
-        """Checks if revert commit is present in the change list and returns
-        the version number (if present).
-
-        Args:
-            change_list: list(ExplorationChange). The list of changes to check.
-
-        Returns:
-            Optional[int]. The revert version number (if present) or None.
-        """
-        for change in change_list:
-            if change.cmd == feconf.CMD_REVERT_COMMIT:
-                return int(change.version_number)
-        return None
 
     def verify_version_history_models(
         self, model_group: FormattedModelGroupDict
@@ -823,140 +848,63 @@ class VerifyVersionHistoryModelsJob(base_jobs.JobBase):
             version history models were created correctly.
         """
         exp_vlatest = model_group['exp_vlatest']
-        versioned_explorations = model_group['all_explorations']
         commit_log_models = model_group['commit_log_models']
         vh_models = model_group['version_history_models']
         exp_id = exp_vlatest.id
         latest_version = exp_vlatest.version
-
-        verified_state_vh = []
-        verified_metadata_vh = []
         verified = True
 
-        # Data for version 1. Version history for version 1 is already
-        # verified as it will be None for all the states and exploration
-        # metadata.
-        commit_log_model = commit_log_models[0]
-        committer_id = commit_log_model.user_id
-        vh_model = vh_models[0]
-        expected_state_vh = {
-            state_name: state_domain.StateVersionHistory(
-                None, None, committer_id
-            )
-            for state_name in versioned_explorations[0].states
-        }
-        expected_metadata_vh = exp_domain.MetadataVersionHistory(
-            None, committer_id
-        )
-        actual_state_vh = {
-            state_name: state_domain.StateVersionHistory.from_dict(
-                state_vh_dict
-            )
-            for state_name, state_vh_dict in (
-                vh_model.state_version_history.items() # type: ignore[union-attr]
-            )
-        }
-        actual_metadata_vh = exp_domain.MetadataVersionHistory(
-            vh_model.metadata_last_edited_version_number, # type: ignore[union-attr]
-            vh_model.metadata_last_edited_committer_id # type: ignore[union-attr]
-        )
-        verified_state_vh.append(expected_state_vh)
-        verified_metadata_vh.append(expected_metadata_vh)
-        if not self.compare_version_histories(
-            expected_state_vh, expected_metadata_vh,
-            actual_state_vh, actual_metadata_vh
-        ):
-            verified = False
+        for version in range(2, latest_version + 1):
+            vh_model = vh_models[version - 1]
+            assert vh_model is not None
+            commit_log_model = commit_log_models[version - 1]
+            assert commit_log_model is not None
+            change_list: List[exp_domain.ExplorationChange] = []
+            for change_dict in commit_log_model.commit_cmds:
+                try:
+                    change_list.append(exp_domain.ExplorationChange(
+                        change_dict
+                    ))
+                except Exception:
+                    continue
 
-        if verified:
-            for version in range(2, latest_version + 1):
-                prev_exp = copy.deepcopy(versioned_explorations[version - 2])
-                curr_exp = copy.deepcopy(versioned_explorations[version - 1])
-                vh_model = vh_models[version - 1]
-                commit_log_model = commit_log_models[version - 1]
-                committer_id = commit_log_model.user_id
-                change_list: List[exp_domain.ExplorationChange] = []
-                for change_dict in commit_log_model.commit_cmds:
-                    try:
-                        change_list.append(exp_domain.ExplorationChange(
-                            change_dict
-                        ))
-                    except Exception:
-                        continue
-                revert_to_version = self.check_for_revert_commit(
-                    change_list
-                )
-                if revert_to_version is not None:
-                    expected_state_vh = copy.deepcopy(
-                        verified_state_vh[revert_to_version - 1]
-                    )
-                    expected_metadata_vh = copy.deepcopy(
-                        verified_metadata_vh[revert_to_version - 1]
-                    )
-                    actual_state_vh = {
-                        state_name: state_domain.StateVersionHistory.from_dict(
-                            state_vh_dict
-                        )
-                        for state_name, state_vh_dict in (
-                            vh_model.state_version_history.items() # type: ignore[union-attr]
-                        )
-                    }
-                    actual_metadata_vh = exp_domain.MetadataVersionHistory(
-                        vh_model.metadata_last_edited_version_number, # type: ignore[union-attr]
-                        vh_model.metadata_last_edited_committer_id # type: ignore[union-attr]
-                    )
-                    if not self.compare_version_histories(
-                        expected_state_vh, expected_metadata_vh,
-                        actual_state_vh, actual_metadata_vh
-                    ):
-                        verified = False
-                        break
-                else:
-                    old_states_dict = {
-                        state_name: state.to_dict()
-                        for state_name, state in prev_exp.states.items()
-                    }
-                    new_states_dict = {
-                        state_name: state.to_dict()
-                        for state_name, state in curr_exp.states.items()
-                    }
-                    old_metadata_dict = prev_exp.get_metadata().to_dict()
-                    new_metadata_dict = curr_exp.get_metadata().to_dict()
+            exp_versions_diff = exp_domain.ExplorationVersionsDiff(change_list)
 
-                    expected_state_vh = (
-                        exp_services.update_states_version_history(
-                            copy.deepcopy(verified_state_vh[-1]),
-                            change_list, old_states_dict,
-                            new_states_dict, version, committer_id
-                        )
-                    )
-                    expected_metadata_vh = (
-                        exp_services.update_metadata_version_history(
-                            copy.deepcopy(verified_metadata_vh[-1]),
-                            change_list, old_metadata_dict,
-                            new_metadata_dict, version, committer_id
-                        )
-                    )
-                    actual_state_vh = {
-                        state_name: state_domain.StateVersionHistory.from_dict(
-                            state_vh_dict
-                        )
-                        for state_name, state_vh_dict in (
-                            vh_model.state_version_history.items() # type: ignore[union-attr]
-                        )
-                    }
-                    actual_metadata_vh = exp_domain.MetadataVersionHistory(
-                        vh_model.metadata_last_edited_version_number, # type: ignore[union-attr]
-                        vh_model.metadata_last_edited_committer_id # type: ignore[union-attr]
-                    )
-                    if not self.compare_version_histories(
-                        expected_state_vh, expected_metadata_vh,
-                        actual_state_vh, actual_metadata_vh
-                    ):
-                        verified = False
-                        break
-                verified_state_vh.append(expected_state_vh)
-                verified_metadata_vh.append(expected_metadata_vh)
+            effective_old_to_new_state_names = {}
+            for old_state_name, new_state_name in (
+                exp_versions_diff.old_to_new_state_names.items()
+            ):
+                if old_state_name != new_state_name: # pragma: no cover
+                    effective_old_to_new_state_names[
+                        old_state_name] = new_state_name
+            for old_state_name, new_state_name in (
+                effective_old_to_new_state_names.items()
+            ):
+                if new_state_name not in vh_model.state_version_history:
+                    verified = False
+                    break
+                state_vh = vh_model.state_version_history[new_state_name]
+                if state_vh['previously_edited_in_version'] != version - 1:
+                    verified = False
+                    break
+                if state_vh['state_name_in_previous_version'] != old_state_name:
+                    verified = False
+                    break
+
+            for state_name in exp_versions_diff.added_state_names:
+                if state_name not in vh_model.state_version_history:
+                    verified = False
+                    break
+                state_vh = vh_model.state_version_history[state_name]
+                if (
+                    state_vh['previously_edited_in_version'] is not None or
+                    state_vh['state_name_in_previous_version'] is not None
+                ):
+                    verified = False
+                    break
+
+            if not verified:
+                break
 
         return (exp_id, verified)
 

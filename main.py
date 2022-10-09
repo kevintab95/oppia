@@ -1035,9 +1035,8 @@ URLS = [
         r'/user_progress_in_stories_chapters_handler/<username>',
         learner_group.LearnerStoriesChaptersProgressHandler),
     get_redirect_route(
-        r'/version-history-logs/<exploration_id>',
-        editor.VersionHistoryLogsDownloader
-    )
+        r'/generate-version-history/<exploration_id>',
+        editor.GenerateVersionHistoryModelsHandler)
 ]
 
 # Adding redirects for topic landing pages.

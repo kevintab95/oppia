@@ -21,6 +21,7 @@ import { downgradeComponent } from '@angular/upgrade/static';
 import { AppConstants } from 'app.constants';
 import { AdminBackendApiService } from 'domain/admin/admin-backend-api.service';
 import { WindowRef } from 'services/contextual/window-ref.service';
+import { VersionHistoryModelsBackendApiService } from 'services/version-history-models-backend-api.service';
 import { AdminPageConstants } from '../admin-page.constants';
 import { AdminTaskManagerService } from '../services/admin-task-manager.service';
 
@@ -58,13 +59,14 @@ export class AdminMiscTabComponent {
   publishedOn!: string;
   showDataExtractionQueryStatus: boolean = false;
   MAX_USERNAME_LENGTH: number = AppConstants.MAX_USERNAME_LENGTH;
-  expIdForVersionHistoryLogs: string = '';
-  versionHistoryLogsDownloadUrl = '/version-history-logs/';
+  expIdForVersionHistory: string = '';
 
   constructor(
     private windowRef: WindowRef,
     private adminBackendApiService: AdminBackendApiService,
-    private adminTaskManagerService: AdminTaskManagerService
+    private adminTaskManagerService: AdminTaskManagerService,
+    private versionHistoryModelsBackendApiService:
+      VersionHistoryModelsBackendApiService
   ) {}
 
   clearSearchIndex(): void {
@@ -294,14 +296,13 @@ export class AdminMiscTabComponent {
     this.showDataExtractionQueryStatus = false;
   }
 
-  onChangeExplorationId(expIdForVersionHistoryLogs: string): void {
-    this.expIdForVersionHistoryLogs = expIdForVersionHistoryLogs;
+  onChangeExplorationId(expIdForVersionHistory: string): void {
+    this.expIdForVersionHistory = expIdForVersionHistory;
   }
 
-  generateVersionHistoryLogs(): void {
-    this.windowRef.nativeWindow.open(
-      this.versionHistoryLogsDownloadUrl + this.expIdForVersionHistoryLogs
-    );
+  generateVersionHistoryModels(): void {
+    this.versionHistoryModelsBackendApiService
+      .generateVersionHistoryModelsAsync(this.expIdForVersionHistory);
   }
 }
 
