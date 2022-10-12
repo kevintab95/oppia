@@ -803,16 +803,17 @@ class ExpSnapshotsMigrationAuditJob(base_jobs.JobBase):
                     (
                         exp_id,
                         Exception(
-                            'Exploration %s failed non-strict validation' % exp_id
+                            'Exploration %s failed non-strict validation'
+                            % exp_id
                         )
                     )
                 )
 
             # Some (very) old explorations do not have a states schema version.
             # These explorations have snapshots that were created before the
-            # states_schema_version system was introduced. We therefore set their
-            # states schema version to 0, since we now expect all snapshots to
-            # explicitly include this field.
+            # states_schema_version system was introduced. We therefore set
+            # their states schema version to 0, since we now expect all
+            # snapshots to explicitly include this field.
             if 'states_schema_version' not in exp_snapshot_model.content:
                 exp_snapshot_model.content['states_schema_version'] = 0
 
@@ -820,12 +821,17 @@ class ExpSnapshotsMigrationAuditJob(base_jobs.JobBase):
             current_state_schema_version = (
                 exp_snapshot_model.content['states_schema_version']
             )
-            language_code = exp_snapshot_model.content['language_code']
+            language_code = exp_snapshot_model.content.get(
+                'language_code',
+                constants.DEFAULT_LANGUAGE_CODE
+            )
             if current_state_schema_version == target_state_schema_version:
                 return result.Err(
                     (
                         exp_id,
-                        Exception('Snapshot is already at latest schema version')
+                        Exception(
+                            'Snapshot is already at latest schema version'
+                        )
                     )
                 )
 
@@ -962,18 +968,10 @@ class ExpSnapshotsMigrationJob(base_jobs.JobBase):
         current_state_schema_version = (
             exp_snapshot_model.content['states_schema_version']
         )
-        try:
-            language_code = exp_snapshot_model.content['language_code']
-        except KeyError:
-            return result.Err(
-                (
-                    exp_id,
-                    Exception(
-                        'Snapshot %s does not have a language code.'
-                        % exp_snapshot_model.id
-                    )
-                )
-            )
+        language_code = exp_snapshot_model.content.get(
+            'language_code',
+            constants.DEFAULT_LANGUAGE_CODE
+        )
         if current_state_schema_version == target_state_schema_version:
             return result.Err(
                 (
