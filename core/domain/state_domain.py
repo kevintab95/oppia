@@ -4574,7 +4574,14 @@ class State(translation_domain.BaseTranslatableObject):
             ca_specs_dict = interaction_specs[interaction_id][
                 'customization_arg_specs']
             for spec in ca_specs_dict:
-                customisation_arg = customisation_args[spec['name']]
+                try:
+                    customisation_arg = customisation_args[spec['name']]
+                except KeyError:
+                    raise Exception(
+                        'Customization arg %s not found in interaction %s. '
+                        'Customization args present: %s' % (
+                            spec['name'], interaction_id, customisation_args))
+
                 contents = (
                     InteractionCustomizationArg.traverse_by_schema_and_get(
                         spec['schema'], customisation_arg['value'], [

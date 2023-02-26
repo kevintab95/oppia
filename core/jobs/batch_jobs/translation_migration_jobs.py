@@ -100,7 +100,10 @@ class EntityTranslationsModelGenerationOneOffJob(base_jobs.JobBase):
                 entity_translation.validate()
         except Exception as e:
             logging.exception(e)
-            return result.Err((exploration.id, e))
+            return result.Err((exploration.id, {
+                'error': e,
+                'version': exploration.states_schema_version
+            }))
 
         return result.Ok(list(lang_code_to_translation.values()))
 
