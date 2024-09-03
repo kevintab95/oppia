@@ -62,7 +62,7 @@ def main(args: Optional[Sequence[str]] = None) -> None:
     delete_directory_tree('third_party/')
     delete_directory_tree('build/')
     delete_directory_tree('backend_prod_files/')
-    delete_file('.coverage')
+    delete_file('coverage')
     delete_directory_tree('local_compiled_js/')
     delete_directory_tree('local_compiled_js_for_test/')
     delete_directory_tree('readme_test_dir/')

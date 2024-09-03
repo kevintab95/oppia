@@ -95,6 +95,8 @@ TIME_REPORT_PATH: Final = os.path.join(
 )
 AVERAGE_TEST_CASE_TIME: Final = 2
 
+COVERAGE_FILE_NAME: Final = 'coverage'
+
 _PARSER: Final = argparse.ArgumentParser(
     description="""
 Run this script from the oppia root folder:
@@ -199,6 +201,7 @@ class TestingTaskSpec:
         if self.generate_coverage_report:
             exc_list = [
                 sys.executable, '-m', 'coverage', 'run', '-p',
+                '--data-file', COVERAGE_FILE_NAME,
                 '--branch', TEST_RUNNER_PATH, test_target_flag
             ]
         else:
