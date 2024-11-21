@@ -9,4 +9,4 @@ jobs:
     steps:
       - name: Get sender
         run: |
-          echo "${{ github.event.sender }}"
+          echo "${{ toJson(github.event.sender) }}"
