@@ -1,6 +1,6 @@
 name: Close PR on force-push or rebase
 on:
-  pull_request:
+  pull_request_target:
     types:
         - opened
         - synchronize
@@ -24,10 +24,6 @@ jobs:
             // reflects any rewrite the PR's branch has undergone since the
             // PR was created, regardless of which of opened/synchronize/
             // reopened this run was triggered by.
-            // NOTE: timelineItems' totalCount always reflects ALL timeline
-            // items on the PR and is NOT affected by the itemTypes filter
-            // (a documented GitHub GraphQL API quirk) -- so we check the
-            // length of the (correctly filtered) nodes list instead.
             const result = await github.graphql(
               `query($owner: String!, $repo: String!, $number: Int!) {
                 repository(owner: $owner, name: $repo) {
